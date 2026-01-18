@@ -1,0 +1,165 @@
+/* Global styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #121212;
+  color: #ffffff;
+}
+
+/* App container */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Folder select view */
+.folder-select-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 80px); /* Account for playback controls */
+  text-align: center;
+  padding: 20px;
+}
+
+.folder-select-view h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #4caf50;
+}
+
+.folder-select-view p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #aaa;
+}
+
+.select-folder-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.select-folder-btn:hover {
+  background-color: #45a049;
+}
+
+/* Track list view */
+.track-list-view {
+  padding: 20px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.track-list-view h2 {
+  margin-top: 0;
+  color: #4caf50;
+}
+
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.track-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #1e1e1e;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.track-item:hover {
+  background-color: #2d2d2d;
+}
+
+.track-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+}
+
+.track-info p {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.track-duration {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+/* Playback controls */
+.playback-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #1e1e1e;
+  padding: 15px 20px;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.control-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.control-btn:hover {
+  background-color: #45a049;
+}
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background-color: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: #4caf50;
+  width: 30%;
+  border-radius: 2px;
+}
