@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'folderSelect' | 'trackList'>('folderSelect')
+  const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations'>('folderSelect')
   
   return (
     <div className="app">
       {currentView === 'folderSelect' ? (
-        <FolderSelectView onFolderSelected={() => setCurrentView('trackList')} />
+        <FolderSelectView onFolderSelected={() => setCurrentView('radioStations')} />
       ) : (
-        <TrackListView />
+        <RadioStationView />
       )}
     </div>
   )
@@ -32,28 +32,59 @@ const FolderSelectView: React.FC<{ onFolderSelected: () => void }> = ({ onFolder
   )
 }
 
-const TrackListView: React.FC = () => {
-  // Mock data for tracks
-  const mockTracks = [
-    { id: '1', title: 'Song Title 1', artist: 'Artist Name 1', duration: '3:45' },
-    { id: '2', title: 'Song Title 2', artist: 'Artist Name 2', duration: '4:20' },
-    { id: '3', title: 'Song Title 3', artist: 'Artist Name 3', duration: '3:15' },
-    { id: '4', title: 'Song Title 4', artist: 'Artist Name 4', duration: '5:10' },
-    { id: '5', title: 'Song Title 5', artist: 'Artist Name 5', duration: '3:55' },
+const RadioStationView: React.FC = () => {
+  // Mock data for radio stations
+  const suggestedStations = [
+    { id: '1', name: 'Chill Vibes' },
+    { id: '2', name: 'Rock Classics' },
+    { id: '3', name: 'Jazz Lounge' },
+    { id: '4', name: 'Electronic Beats' },
+    { id: '5', name: 'Pop Hits' },
+    { id: '6', name: 'Hip Hop Central' },
+  ]
+
+  const recentStations = [
+    { id: '7', name: 'Indie Mix' },
+    { id: '8', name: 'Classical Moments' },
+    { id: '9', name: 'Country Roads' },
+    { id: '10', name: 'Metal Madness' },
+    { id: '11', name: 'R&B Smooth' },
+    { id: '12', name: 'Reggae Vibes' },
   ]
 
   return (
-    <div className="track-list-view">
-      <h2>Music Library</h2>
-      <div className="track-list">
-        {mockTracks.map((track) => (
-          <div key={track.id} className="track-item">
-            <div className="track-info">
-              <h3>{track.title}</h3>
-              <p>{track.artist}</p>
+    <div className="radio-stations-view">
+      <h2>Radio Stations</h2>
+      
+      {/* Suggested Stations */}
+      <div className="section-title">
+        <h3>Suggested Stations</h3>
+      </div>
+      <div className="radio-station-grid">
+        {suggestedStations.map((station) => (
+          <div key={station.id} className="radio-station-card">
+            <div className="station-image-placeholder">
+              <span className="station-icon">📻</span>
             </div>
-            <div className="track-duration">
-              {track.duration}
+            <div className="station-info">
+              <h4>{station.name}</h4>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Recent Stations */}
+      <div className="section-title">
+        <h3>Recently Played</h3>
+      </div>
+      <div className="radio-station-grid">
+        {recentStations.map((station) => (
+          <div key={station.id} className="radio-station-card">
+            <div className="station-image-placeholder">
+              <span className="station-icon">📻</span>
+            </div>
+            <div className="station-info">
+              <h4>{station.name}</h4>
             </div>
           </div>
         ))}
