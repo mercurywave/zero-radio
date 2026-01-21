@@ -1,8 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations'>('folderSelect')
   
+  // Check for saved folder on initial load
+  useEffect(() => {
+    const savedFolder = localStorage.getItem('selectedFolder')
+    if (savedFolder) {
+      // If we have a saved folder, skip to radio stations view
+      setCurrentView('radioStations')
+    }
+  }, [])
+
   return (
     <div className="app">
       {currentView === 'folderSelect' ? (
@@ -15,10 +24,28 @@ const App: React.FC = () => {
 }
 
 const FolderSelectView: React.FC<{ onFolderSelected: () => void }> = ({ onFolderSelected }) => {
-  const handleFolderSelect = () => {
-    // In a real implementation, this would use the File System Access API
-    // For now, we'll simulate the folder selection
-    onFolderSelected()
+  const handleFolderSelect = async () => {
+    try {
+      // Check if the File System Access API is supported
+      if (typeof window.showDirectoryPicker === 'undefined') {
+        alert('Your browser does not support the File System Access API. Please use a modern browser like Chrome, Edge, or Opera.')
+        return
+      }
+
+      // Open directory picker
+      const folder = await window.showDirectoryPicker({
+        mode: 'read'
+      })
+
+      // Save selected folder to localStorage (we'll store just the name for simplicity)
+      localStorage.setItem('selectedFolder', folder.name)
+      
+      // Proceed to radio stations view
+      onFolderSelected()
+    } catch (error) {
+      console.error('Error selecting folder:', error)
+      alert('Failed to select folder. Please try again.')
+    }
   }
 
   return (
