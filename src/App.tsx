@@ -71,7 +71,7 @@ const FolderSelectView: React.FC<{
 
       console.log('Updating cache for folder:', folder.name);
 
-      await cacheService.initializeCache(folder);
+      await cacheService.updateCache(folder);
 
       // Clear progress tracking
       cacheService.clearOnProgress();
