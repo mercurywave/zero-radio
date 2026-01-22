@@ -52,37 +52,7 @@ const App: React.FC = () => {
 const FolderSelectView: React.FC<{
   onFolderSelected: () => void;
 }> = ({ onFolderSelected }) => {
-  const handleFolderSelect = async () => {
-    try {
-      // Check if the File System Access API is supported
-      if (typeof window.showDirectoryPicker === 'undefined') {
-        alert('Your browser does not support the File System Access API. Please use a modern browser like Chrome, Edge, or Opera.')
-        return
-      }
-
-      // Open directory picker
-      const folder = await window.showDirectoryPicker({
-        mode: 'read'
-      });
-
-      // Initialize cache with the selected directory
-      console.log('Initializing cache for folder:', folder.name);
-      await cacheService.initDB();
-
-      console.log('Updating cache for folder:', folder.name);
-
-      await cacheService.updateCache(folder);
-
-      // Clear progress tracking
-      cacheService.clearOnProgress();
-
-      // Proceed to radio stations view
-      onFolderSelected()
-    } catch (error) {
-      console.error('Error selecting folder:', error)
-      alert('Failed to select folder. Please try again.')
-    }
-  }
+  const handleFolderSelect = () => doSelectFolder(onFolderSelected)
 
   return (
     <div className="folder-select-view">
@@ -170,6 +140,38 @@ const RadioStationView: React.FC = () => {
       </div>
     </div>
   )
+}
+
+async function doSelectFolder(onFolderSelected: () => void) {
+  try {
+    // Check if the File System Access API is supported
+    if (typeof window.showDirectoryPicker === 'undefined') {
+      alert('Your browser does not support the File System Access API. Please use a modern browser like Chrome, Edge, or Opera.')
+      return
+    }
+
+    // Open directory picker
+    const folder = await window.showDirectoryPicker({
+      mode: 'read'
+    })
+
+    // Initialize cache with the selected directory
+    console.log('Initializing cache for folder:', folder.name)
+    await cacheService.initDB()
+
+    console.log('Updating cache for folder:', folder.name)
+
+    await cacheService.updateCache(folder)
+
+    // Clear progress tracking
+    cacheService.clearOnProgress()
+
+    // Proceed to radio stations view
+    onFolderSelected()
+  } catch (error) {
+    console.error('Error selecting folder:', error)
+    alert('Failed to select folder. Please try again.')
+  }
 }
 
 export default App
