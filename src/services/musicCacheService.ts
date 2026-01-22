@@ -31,6 +31,7 @@ const ALBUM_ART_STORE = 'albumArt';
 
 export class MusicCacheService {
   private db: IDBDatabase | null = null;
+  private onProgressCallback: ((progress: number, current: number, total: number) => void) | null = null;
 
   constructor() {
   }
@@ -79,7 +80,13 @@ export class MusicCacheService {
       // Extract metadata for all files and store in cache
       const entries: MusicLibraryEntry[] = [];
       
-      for (const file of audioFiles) {
+      // Update progress - start at 0%
+      if (this.onProgressCallback) {
+        this.onProgressCallback(0, 0, audioFiles.length);
+      }
+      
+      for (let i = 0; i < audioFiles.length; i++) {
+        const file = audioFiles[i]!;
         try {
           const metadata = await extractMetadata(file);
           if (metadata) {
@@ -100,6 +107,11 @@ export class MusicCacheService {
           }
         } catch (error) {
           console.error(`Error extracting metadata from ${file.name}:`, error);
+        }
+        
+        // Update progress - increment by 1/total files percentage
+        if (this.onProgressCallback) {
+          this.onProgressCallback(((i + 1) / audioFiles.length) * 100, i + 1, audioFiles.length);
         }
       }
 
@@ -280,5 +292,19 @@ export class MusicCacheService {
       hash = hash & hash; // Convert to 32bit integer
     }
     return hash.toString();
+  }
+
+  /**
+   * Set a callback function to receive progress updates
+   */
+  public setOnProgress(callback: (progress: number, current: number, total: number) => void): void {
+    this.onProgressCallback = callback;
+  }
+
+  /**
+   * Clear the progress callback
+   */
+  public clearOnProgress(): void {
+    this.onProgressCallback = null;
   }
 }

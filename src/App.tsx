@@ -1,8 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { MusicCacheService } from './services/musicCacheService'
+import ProgressPopover from './components/ProgressPopover'
+import './index.css'
+import './components/ProgressPopover.css'
+
+const cacheService = new MusicCacheService();
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations'>('folderSelect')
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [currentFile, setCurrentFile] = useState(0)
+  const [totalFiles, setTotalFiles] = useState(0)
+
+  // Set up progress tracking - pass a callback function that updates our local state
+  cacheService.setOnProgress((progress, current, total) => {
+    setProgress(progress);
+    setCurrentFile(current);
+    setTotalFiles(total);
+    setIsProcessing(current < total);
+  });
 
   // Check for saved folder on initial load
   useEffect(() => {
@@ -16,15 +33,25 @@ const App: React.FC = () => {
   return (
     <div className="app">
       {currentView === 'folderSelect' ? (
-        <FolderSelectView onFolderSelected={() => setCurrentView('radioStations')} />
+        <FolderSelectView
+          onFolderSelected={() => setCurrentView('radioStations')}
+        />
       ) : (
         <RadioStationView />
       )}
+      <ProgressPopover
+        isVisible={isProcessing}
+        progress={progress}
+        current={currentFile}
+        total={totalFiles}
+      />
     </div>
   )
 }
 
-const FolderSelectView: React.FC<{ onFolderSelected: () => void }> = ({ onFolderSelected }) => {
+const FolderSelectView: React.FC<{
+  onFolderSelected: () => void;
+}> = ({ onFolderSelected }) => {
   const handleFolderSelect = async () => {
     try {
       // Check if the File System Access API is supported
@@ -39,13 +66,15 @@ const FolderSelectView: React.FC<{ onFolderSelected: () => void }> = ({ onFolder
       });
 
       // Initialize cache with the selected directory
-      const cacheService = new MusicCacheService();
       console.log('Initializing cache for folder:', folder.name);
       await cacheService.initDB();
 
       console.log('Updating cache for folder:', folder.name);
 
-      cacheService.initializeCache(folder);
+      await cacheService.initializeCache(folder);
+
+      // Clear progress tracking
+      cacheService.clearOnProgress();
 
       // Proceed to radio stations view
       onFolderSelected()
