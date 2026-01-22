@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { MusicCacheService } from './services/musicCacheService'
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations'>('folderSelect')
-  
+
   // Check for saved folder on initial load
   useEffect(() => {
-    const savedFolder = localStorage.getItem('selectedFolder')
+    const savedFolder = localStorage.getItem('savedFolderHandle')
     if (savedFolder) {
       // If we have a saved folder, skip to radio stations view
       setCurrentView('radioStations')
@@ -35,11 +36,17 @@ const FolderSelectView: React.FC<{ onFolderSelected: () => void }> = ({ onFolder
       // Open directory picker
       const folder = await window.showDirectoryPicker({
         mode: 'read'
-      })
+      });
 
-      // Save selected folder to localStorage (we'll store just the name for simplicity)
-      localStorage.setItem('selectedFolder', folder.name)
-      
+      // Initialize cache with the selected directory
+      const cacheService = new MusicCacheService();
+      console.log('Initializing cache for folder:', folder.name);
+      await cacheService.initDB();
+
+      console.log('Updating cache for folder:', folder.name);
+
+      cacheService.initializeCache(folder);
+
       // Proceed to radio stations view
       onFolderSelected()
     } catch (error) {
@@ -60,7 +67,7 @@ const FolderSelectView: React.FC<{ onFolderSelected: () => void }> = ({ onFolder
 }
 
 const RadioStationView: React.FC = () => {
-  // Mock data for radio stations
+  // Mock data for radio stations - will be replaced with actual library data
   const suggestedStations = [
     { id: '1', name: 'Chill Vibes' },
     { id: '2', name: 'Rock Classics' },
@@ -82,7 +89,7 @@ const RadioStationView: React.FC = () => {
   return (
     <div className="radio-stations-view">
       <h2>Radio Stations</h2>
-      
+
       {/* Suggested Stations */}
       <div className="section-title">
         <h3>Suggested Stations</h3>
@@ -99,7 +106,7 @@ const RadioStationView: React.FC = () => {
           </div>
         ))}
       </div>
-      
+
       {/* Recent Stations */}
       <div className="section-title">
         <h3>Recently Played</h3>
@@ -116,7 +123,7 @@ const RadioStationView: React.FC = () => {
           </div>
         ))}
       </div>
-      
+
       {/* Playback Controls */}
       <div className="playback-controls">
         <div className="control-buttons">
