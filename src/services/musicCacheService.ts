@@ -1,5 +1,5 @@
 import { FileSystemDirectoryHandle } from '../types/fileSystemTypes';
-import { extractMetadata } from './metadataService';
+import { extractMetadata, extractAlbumArt } from './metadataService';
 import { scanDirectoryForAudioFiles } from './fileSystemService';
 
 // Define types for our music library entries
@@ -21,6 +21,7 @@ export interface AlbumArtEntry {
   id: string;
   data: ArrayBuffer | Blob;
   mimeType: string;
+  filePath: string; // Add filePath for linking to music entry
 }
 
 // IndexedDB database name and version
@@ -68,7 +69,6 @@ export class MusicCacheService {
     });
   }
   
-
   async updateCache(directoryHandle: FileSystemDirectoryHandle): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized');
@@ -134,7 +134,21 @@ export class MusicCacheService {
               duration: metadata.duration || 0
             };
             newEntries.push(entry);
+            
+            // Store the music entry first
             await this.storeEntries([entry]);
+            
+            // Extract and store album art if available
+            const albumArt = await extractAlbumArt(file);
+            if (albumArt && albumArt.data) {
+              await this.storeAlbumArt({
+                id: this.generateId(file.name), // Use same ID as music entry for linking
+                data: albumArt.data,
+                mimeType: albumArt.mimeType,
+                filePath: file.name
+              });
+            }
+            
             // Update progress - increment by 1/total files percentage
             if (this.onProgressCallback) {
               this.onProgressCallback(((i + 1) / newFiles.length) * 100, i + 1, newFiles.length);
@@ -225,6 +239,21 @@ export class MusicCacheService {
           reject(request.error);
         };
       }
+    });
+  }
+
+  private async storeAlbumArt(artEntry: AlbumArtEntry): Promise<void> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    const transaction = this.db!.transaction([ALBUM_ART_STORE], 'readwrite');
+    const store = transaction.objectStore(ALBUM_ART_STORE);
+
+    await new Promise<void>((resolve, reject) => {
+      const request = store.put(artEntry);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
     });
   }
 

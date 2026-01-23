@@ -39,3 +39,35 @@ export async function extractMetadata(fileHandle: FileSystemFileHandle): Promise
     return null;
   }
 }
+
+// Function to extract album art from a file handle (returns null if no cover)
+export async function extractAlbumArt(fileHandle: FileSystemFileHandle): Promise<{ data: any; mimeType: string } | null> {
+  try {
+    // Get the File object from the handle
+    const file = await fileHandle.getFile();
+    
+    // Parse the metadata to get album art - skip duration for performance
+    const metadata = await parseBlob(file, { 
+      duration: false,
+      skipCovers: false
+    });
+    
+    // Check if there are embedded pictures (album art)
+    if (metadata.common.picture && metadata.common.picture.length > 0) {
+      // Get the first picture - use a safer approach to handle potential undefined values
+      const cover = metadata.common.picture[0];
+      
+      if (cover && cover.data && cover.format) {
+        return {
+          data: cover.data,
+          mimeType: cover.format
+        };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error extracting album art:', error);
+    return null;
+  }
+}
