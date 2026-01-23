@@ -6,15 +6,6 @@ export interface FileSystemFileHandle {
   createWritable(): Promise<FileSystemWritableFileStream>;
 }
 
-export interface FileSystemDirectoryHandle {
-  name: string;
-  kind: 'directory';
-  entries(): AsyncIterableIterator<[string, FileSystemFileHandle | FileSystemDirectoryHandle]>;
-  resolve(possibleDescendant: FileSystemHandle): Promise<string[] | null>;
-  getDirectoryHandle(name: string, options?: { create?: boolean }): Promise<FileSystemDirectoryHandle>;
-  getFileHandle(name: string, options?: { create?: boolean }): Promise<FileSystemFileHandle>;
-}
-
 export interface FileSystemHandle {
   name: string;
 }

@@ -1,4 +1,3 @@
-import { FileSystemDirectoryHandle } from '../types/fileSystemTypes';
 import { extractMetadata, extractAlbumArt } from './metadataService';
 import { scanDirectoryForAudioFiles } from './fileSystemService';
 

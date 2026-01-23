@@ -3,6 +3,7 @@ import { MusicCacheService } from './services/musicCacheService'
 import ProgressPopover from './components/ProgressPopover'
 import './index.css'
 import './components/ProgressPopover.css'
+import { get, set } from 'idb-keyval'
 
 const cacheService = new MusicCacheService();
 
@@ -23,11 +24,12 @@ const App: React.FC = () => {
 
   // Check for saved folder on initial load
   useEffect(() => {
-    const savedFolder = localStorage.getItem('savedFolderHandle')
-    if (savedFolder) {
-      // If we have a saved folder, skip to radio stations view
-      setCurrentView('radioStations')
-    }
+    tryUseCachedFolder().then(folder => {
+      if (folder) {
+        // If we have a saved folder, skip to radio stations view
+        setCurrentView('radioStations')
+      }
+    });
   }, [])
 
   return (
@@ -154,6 +156,9 @@ async function doSelectFolder(onFolderSelected: () => void) {
     const folder = await window.showDirectoryPicker({
       mode: 'read'
     })
+    if(!folder) return;
+
+    saveDirectoryHandle(folder);
 
     // Initialize cache with the selected directory
     console.log('Initializing cache for folder:', folder.name)
@@ -173,5 +178,35 @@ async function doSelectFolder(onFolderSelected: () => void) {
     alert('Failed to select folder. Please try again.')
   }
 }
+
+async function saveDirectoryHandle(handle: FileSystemDirectoryHandle) {
+  await set("savedDirHandle", handle);
+}
+
+async function loadDirectoryHandle(): Promise<FileSystemDirectoryHandle | null> {
+  return (await get("savedDirHandle")) ?? null;
+}
+
+async function verifyPermission(handle: FileSystemHandle, mode: "read" | "readwrite" = "readwrite"): Promise<boolean> {
+  const opts = { mode };
+
+  const query = await (handle as any).queryPermission(opts);
+  if (query === "granted") return true;
+
+  const request = await (handle as any).requestPermission(opts);
+  return request === "granted";
+}
+
+async function tryUseCachedFolder(): Promise< FileSystemDirectoryHandle | null> {
+  let dirHandle = await loadDirectoryHandle();
+
+  if (!dirHandle || !(await verifyPermission(dirHandle))) {
+    return null;
+  }
+  return dirHandle;
+}
+
+
+
 
 export default App
