@@ -16,6 +16,10 @@ export interface MusicLibraryEntry {
   duration: number;
 }
 
+export interface AudioTrack extends MusicLibraryEntry {
+  albumArt: string | null;
+}
+
 export interface AlbumArtEntry {
   id: string;
   data: ArrayBuffer | Blob;

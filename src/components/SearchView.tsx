@@ -1,29 +1,29 @@
 import React from 'react';
-import { MusicCacheService, MusicLibraryEntry } from '../services/musicCacheService';
+import { MusicCacheService, MusicLibraryEntry, AudioTrack } from '../services/musicCacheService';
 
 export const performSearch = async (
   cacheService: MusicCacheService,
   searchQuery: string,
-  setSearchResults: (results: any[]) => void,
+  setSearchResults: (results: AudioTrack[]) => void,
   setIsSearching: (isSearching: boolean) => void
-) => {
+): Promise<void> => {
   try {
     setIsSearching(true);
     const allEntries = await cacheService.getAllCachedEntries();
     
     // Simple fuzzy search implementation
-    const results = allEntries.filter((entry: any) => 
+    const results = allEntries.filter((entry: MusicLibraryEntry) => 
       entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.album.toLowerCase().includes(searchQuery.toLowerCase())
     );
     
     // Fetch album art for each result
-    const resultsWithArt = await Promise.all(
-      results.map(async (entry: MusicLibraryEntry) => {
+    const resultsWithArt: AudioTrack[] = await Promise.all(
+      results.map(async (entry: MusicLibraryEntry): Promise<AudioTrack> => {
         try {
           const albumArt = await cacheService.getAlbumArtById(entry.id);
-          let albumArtUrl = null;
+          let albumArtUrl: string | null = null;
           
           if (albumArt && albumArt.data) {
             // Handle different data types that might be returned
@@ -68,9 +68,9 @@ export const performSearch = async (
 interface SearchViewProps {
   onSearchQueryChange: (query: string) => void;
   searchQuery: string;
-  searchResults: any[];
+  searchResults: AudioTrack[];
   isSearching: boolean;
-  onPlayTrack?: ((track: any) => void) | undefined;
+  onPlayTrack?: ((track: AudioTrack) => void) | undefined;
 }
 
 const SearchView: React.FC<SearchViewProps> = ({
