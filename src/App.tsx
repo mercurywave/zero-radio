@@ -68,6 +68,10 @@ const FolderSelectView: React.FC<{
 }
 
 const RadioStationView: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  
   // Mock data for radio stations - will be replaced with actual library data
   const suggestedStations = [
     { id: '1', name: 'Chill Vibes' },
@@ -87,43 +91,143 @@ const RadioStationView: React.FC = () => {
     { id: '12', name: 'Reggae Vibes' },
   ]
 
+  // Initialize the cache service when component mounts
+  useEffect(() => {
+    const initCache = async () => {
+      try {
+        await cacheService.initDB();
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+      }
+    };
+    
+    initCache();
+  }, []);
+
+  // Perform search when query changes
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    const performSearch = async () => {
+      try {
+        setIsSearching(true);
+        const allEntries = await cacheService.getAllCachedEntries();
+        
+        // Simple fuzzy search implementation
+        const results = allEntries.filter(entry => 
+          entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          entry.album.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        
+        setSearchResults(results);
+        setIsSearching(false);
+      } catch (error) {
+        console.error('Search error:', error);
+        setIsSearching(false);
+      }
+    };
+
+    // Add a small delay to avoid too frequent searches
+    const timeoutId = setTimeout(performSearch, 100);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // Render search results or radio station tiles
+  const renderContent = () => {
+    if (searchQuery.trim() !== '') {
+      if (isSearching) {
+        return (
+          <div className="search-results">
+            <p>Searching...</p>
+          </div>
+        );
+      }
+      
+      if (searchResults.length === 0) {
+        return (
+          <div className="search-results">
+            <p>No results found</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="search-results">
+          {searchResults.map((entry, index) => (
+            <div key={index} className="search-result-item">
+              <div className="station-image-placeholder">
+                <span className="station-icon">🎵</span>
+              </div>
+              <div className="station-info">
+                <h4>{entry.title}</h4>
+                <p className="station-genre">{entry.artist}</p>
+                <p className="station-listeners">{entry.album}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Show radio station tiles when no search query
+    return (
+      <>
+        {/* Suggested Stations */}
+        <div className="section-title">
+          <h3>Suggested Stations</h3>
+        </div>
+        <div className="radio-station-grid">
+          {suggestedStations.map((station) => (
+            <div key={station.id} className="radio-station-card">
+              <div className="station-image-placeholder">
+                <span className="station-icon">📻</span>
+              </div>
+              <div className="station-info">
+                <h4>{station.name}</h4>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Recent Stations */}
+        <div className="section-title">
+          <h3>Recently Played</h3>
+        </div>
+        <div className="radio-station-grid">
+          {recentStations.map((station) => (
+            <div key={station.id} className="radio-station-card">
+              <div className="station-image-placeholder">
+                <span className="station-icon">📻</span>
+              </div>
+              <div className="station-info">
+                <h4>{station.name}</h4>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="radio-stations-view">
-      <h2>Radio Stations</h2>
-
-      {/* Suggested Stations */}
-      <div className="section-title">
-        <h3>Suggested Stations</h3>
-      </div>
-      <div className="radio-station-grid">
-        {suggestedStations.map((station) => (
-          <div key={station.id} className="radio-station-card">
-            <div className="station-image-placeholder">
-              <span className="station-icon">📻</span>
-            </div>
-            <div className="station-info">
-              <h4>{station.name}</h4>
-            </div>
-          </div>
-        ))}
+      {/* Search bar at top middle */}
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Search artists, songs, or albums..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-bar"
+        />
       </div>
 
-      {/* Recent Stations */}
-      <div className="section-title">
-        <h3>Recently Played</h3>
-      </div>
-      <div className="radio-station-grid">
-        {recentStations.map((station) => (
-          <div key={station.id} className="radio-station-card">
-            <div className="station-image-placeholder">
-              <span className="station-icon">📻</span>
-            </div>
-            <div className="station-info">
-              <h4>{station.name}</h4>
-            </div>
-          </div>
-        ))}
-      </div>
+      {renderContent()}
 
       {/* Playback Controls */}
       <div className="playback-controls">

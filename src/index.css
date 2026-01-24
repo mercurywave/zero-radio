@@ -67,6 +67,28 @@ body {
   color: #4caf50;
 }
 
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  width: 80%;
+  max-width: 500px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 1px solid #333;
+  border-radius: 20px;
+  background-color: #1e1e1e;
+  color: white;
+  outline: none;
+}
+
+.search-bar:focus {
+  border-color: #4caf50;
+}
+
 .section-title {
   margin-top: 30px;
   margin-bottom: 15px;
@@ -84,30 +106,40 @@ body {
   margin-bottom: 30px;
 }
 
-.radio-station-card {
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
-  cursor: pointer;
+.search-results {
+  margin-top: 20px;
 }
 
-.radio-station-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.search-result-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
 .station-image-placeholder {
-  height: 150px;
+  height: 60px;
+  width: 60px;
   background-color: #2d2d2d;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  margin-right: 15px;
+  border-radius: 4px;
 }
 
 .station-icon {
-  font-size: 4rem;
+  font-size: 2rem;
   opacity: 0.7;
 }
 
