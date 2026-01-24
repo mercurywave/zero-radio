@@ -1,7 +1,8 @@
 import React from 'react';
+import { MusicCacheService, MusicLibraryEntry } from '../services/musicCacheService';
 
 export const performSearch = async (
-  cacheService: any,
+  cacheService: MusicCacheService,
   searchQuery: string,
   setSearchResults: (results: any[]) => void,
   setIsSearching: (isSearching: boolean) => void
@@ -19,7 +20,7 @@ export const performSearch = async (
     
     // Fetch album art for each result
     const resultsWithArt = await Promise.all(
-      results.map(async (entry: any) => {
+      results.map(async (entry: MusicLibraryEntry) => {
         try {
           const albumArt = await cacheService.getAlbumArtById(entry.id);
           let albumArtUrl = null;
