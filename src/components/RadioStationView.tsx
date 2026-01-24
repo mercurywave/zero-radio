@@ -1,0 +1,175 @@
+import React, { useEffect, useState } from 'react';
+import SearchView from './SearchView';
+import { MusicCacheService } from '../services/musicCacheService';
+
+const cacheService = new MusicCacheService();
+
+interface RadioStationViewProps {
+  // This component doesn't need any props in this version
+}
+
+const RadioStationView: React.FC<RadioStationViewProps> = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Mock data for radio stations - will be replaced with actual library data
+  const suggestedStations = [
+    { id: '1', name: 'Chill Vibes' },
+    { id: '2', name: 'Rock Classics' },
+    { id: '3', name: 'Jazz Lounge' },
+    { id: '4', name: 'Electronic Beats' },
+    { id: '5', name: 'Pop Hits' },
+    { id: '6', name: 'Hip Hop Central' },
+  ]
+
+  const recentStations = [
+    { id: '7', name: 'Indie Mix' },
+    { id: '8', name: 'Classical Moments' },
+    { id: '9', name: 'Country Roads' },
+    { id: '10', name: 'Metal Madness' },
+    { id: '11', name: 'R&B Smooth' },
+    { id: '12', name: 'Reggae Vibes' },
+  ]
+
+  // Initialize the cache service when component mounts
+  useEffect(() => {
+    const initCache = async () => {
+      try {
+        await cacheService.initDB();
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+      }
+    };
+    
+    initCache();
+  }, []);
+
+  // Perform search when query changes
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    const performSearch = async () => {
+      try {
+        setIsSearching(true);
+        const allEntries = await cacheService.getAllCachedEntries();
+        
+        // Simple fuzzy search implementation
+        const results = allEntries.filter(entry => 
+          entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          entry.album.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        
+        // Fetch album art for each result
+        const resultsWithArt = await Promise.all(
+          results.map(async (entry) => {
+            try {
+              const albumArt = await cacheService.getAlbumArtById(entry.id);
+              let albumArtUrl = null;
+              
+              if (albumArt && albumArt.data) {
+                // Handle different data types that might be returned
+                if (albumArt.data instanceof Blob) {
+                  albumArtUrl = URL.createObjectURL(albumArt.data);
+                } else if(albumArt.data instanceof Uint8Array) {
+                  // Convert Uint8Array to Blob for URL creation
+                  const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
+                  albumArtUrl = URL.createObjectURL(blob);
+                } else if (albumArt.data instanceof ArrayBuffer) {
+                  // Convert ArrayBuffer to Blob for URL creation
+                  const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
+                  albumArtUrl = URL.createObjectURL(blob);
+                } else if (typeof albumArt.data === 'string') {
+                  // If it's already a data URL, use it directly
+                  albumArtUrl = albumArt.data;
+                }
+              }
+              
+              return {
+                ...entry,
+                albumArt: albumArtUrl
+              };
+            } catch (error) {
+              console.error('Error fetching album art:', error);
+              return {
+                ...entry,
+                albumArt: null
+              };
+            }
+          })
+        );
+        
+        setSearchResults(resultsWithArt);
+        setIsSearching(false);
+      } catch (error) {
+        console.error('Search error:', error);
+        setIsSearching(false);
+      }
+    };
+
+    // Add a small delay to avoid too frequent searches
+    const timeoutId = setTimeout(performSearch, 100);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // Render radio station tiles when no search query
+  const renderStationTiles = () => {
+    return (
+      <>
+        {/* Suggested Stations */}
+        <div className="section-title">
+          <h3>Suggested Stations</h3>
+        </div>
+        <div className="radio-station-grid">
+          {suggestedStations.map((station) => (
+            <div key={station.id} className="radio-station-card">
+              <div className="station-image-placeholder">
+                <span className="station-icon">📻</span>
+              </div>
+              <div className="station-info">
+                <h4>{station.name}</h4>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Recent Stations */}
+        <div className="section-title">
+          <h3>Recently Played</h3>
+        </div>
+        <div className="radio-station-grid">
+          {recentStations.map((station) => (
+            <div key={station.id} className="radio-station-card">
+              <div className="station-image-placeholder">
+                <span className="station-icon">📻</span>
+              </div>
+              <div className="station-info">
+                <h4>{station.name}</h4>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="radio-stations-view">
+      <SearchView 
+        onSearchQueryChange={setSearchQuery}
+        searchQuery={searchQuery}
+        searchResults={searchResults}
+        isSearching={isSearching}
+      />
+      
+      {searchQuery.trim() === '' && renderStationTiles()}
+    </div>
+  )
+}
+
+export default RadioStationView;
