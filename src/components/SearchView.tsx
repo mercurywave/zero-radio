@@ -1,5 +1,69 @@
 import React from 'react';
 
+export const performSearch = async (
+  cacheService: any,
+  searchQuery: string,
+  setSearchResults: (results: any[]) => void,
+  setIsSearching: (isSearching: boolean) => void
+) => {
+  try {
+    setIsSearching(true);
+    const allEntries = await cacheService.getAllCachedEntries();
+    
+    // Simple fuzzy search implementation
+    const results = allEntries.filter((entry: any) => 
+      entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.album.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    // Fetch album art for each result
+    const resultsWithArt = await Promise.all(
+      results.map(async (entry: any) => {
+        try {
+          const albumArt = await cacheService.getAlbumArtById(entry.id);
+          let albumArtUrl = null;
+          
+          if (albumArt && albumArt.data) {
+            // Handle different data types that might be returned
+            if (albumArt.data instanceof Blob) {
+              albumArtUrl = URL.createObjectURL(albumArt.data);
+            } else if(albumArt.data instanceof Uint8Array) {
+              // Convert Uint8Array to Blob for URL creation
+              const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
+              albumArtUrl = URL.createObjectURL(blob);
+            } else if (albumArt.data instanceof ArrayBuffer) {
+              // Convert ArrayBuffer to Blob for URL creation
+              const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
+              albumArtUrl = URL.createObjectURL(blob);
+            } else if (typeof albumArt.data === 'string') {
+              // If it's already a data URL, use it directly
+              albumArtUrl = albumArt.data;
+            }
+          }
+          
+          return {
+            ...entry,
+            albumArt: albumArtUrl
+          };
+        } catch (error) {
+          console.error('Error fetching album art:', error);
+          return {
+            ...entry,
+            albumArt: null
+          };
+        }
+      })
+    );
+    
+    setSearchResults(resultsWithArt);
+    setIsSearching(false);
+  } catch (error) {
+    console.error('Search error:', error);
+    setIsSearching(false);
+  }
+};
+
 interface SearchViewProps {
   onSearchQueryChange: (query: string) => void;
   searchQuery: string;

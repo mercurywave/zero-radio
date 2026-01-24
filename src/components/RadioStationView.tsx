@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import SearchView from './SearchView';
+import SearchView, { performSearch } from './SearchView';
 import { MusicCacheService } from '../services/musicCacheService';
 
 const cacheService = new MusicCacheService();
@@ -45,7 +45,7 @@ const RadioStationView: React.FC<RadioStationViewProps> = () => {
     initCache();
   }, []);
 
-  // Perform search when query changes
+    // Perform search when query changes
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setSearchResults([]);
@@ -53,67 +53,17 @@ const RadioStationView: React.FC<RadioStationViewProps> = () => {
       return;
     }
 
-    const performSearch = async () => {
-      try {
-        setIsSearching(true);
-        const allEntries = await cacheService.getAllCachedEntries();
-        
-        // Simple fuzzy search implementation
-        const results = allEntries.filter(entry => 
-          entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          entry.album.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        
-        // Fetch album art for each result
-        const resultsWithArt = await Promise.all(
-          results.map(async (entry) => {
-            try {
-              const albumArt = await cacheService.getAlbumArtById(entry.id);
-              let albumArtUrl = null;
-              
-              if (albumArt && albumArt.data) {
-                // Handle different data types that might be returned
-                if (albumArt.data instanceof Blob) {
-                  albumArtUrl = URL.createObjectURL(albumArt.data);
-                } else if(albumArt.data instanceof Uint8Array) {
-                  // Convert Uint8Array to Blob for URL creation
-                  const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
-                  albumArtUrl = URL.createObjectURL(blob);
-                } else if (albumArt.data instanceof ArrayBuffer) {
-                  // Convert ArrayBuffer to Blob for URL creation
-                  const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
-                  albumArtUrl = URL.createObjectURL(blob);
-                } else if (typeof albumArt.data === 'string') {
-                  // If it's already a data URL, use it directly
-                  albumArtUrl = albumArt.data;
-                }
-              }
-              
-              return {
-                ...entry,
-                albumArt: albumArtUrl
-              };
-            } catch (error) {
-              console.error('Error fetching album art:', error);
-              return {
-                ...entry,
-                albumArt: null
-              };
-            }
-          })
-        );
-        
-        setSearchResults(resultsWithArt);
-        setIsSearching(false);
-      } catch (error) {
-        console.error('Search error:', error);
-        setIsSearching(false);
-      }
+    const performSearchWrapper = async () => {
+      await performSearch(
+        cacheService,
+        searchQuery,
+        setSearchResults,
+        setIsSearching
+      );
     };
 
     // Add a small delay to avoid too frequent searches
-    const timeoutId = setTimeout(performSearch, 100);
+    const timeoutId = setTimeout(performSearchWrapper, 100);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
