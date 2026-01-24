@@ -26,52 +26,36 @@ const SearchView: React.FC<SearchViewProps> = ({
         />
       </div>
 
-      {searchQuery.trim() !== '' ? (
-        isSearching ? (
-          <div className="search-results">
-            <p>Searching...</p>
-          </div>
-        ) : searchResults.length === 0 ? (
-          <div className="search-results">
-            <p>No results found</p>
-          </div>
-        ) : (
-          <div className="search-results">
-            {searchResults.map((entry, index) => (
-              <div key={index} className="search-result-item">
-                <div className="station-image-placeholder">
-                  {entry.albumArt ? (
-                    <img src={entry.albumArt} alt={`${entry.title} album art`} className="album-art" />
-                  ) : (
-                    <span className="station-icon">🎵</span>
-                  )}
-                </div>
-                <div className="station-info">
-                  <h4>{entry.title}</h4>
-                  <p className="station-genre">{entry.artist}</p>
-                  <p className="station-listeners">{entry.album}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      ) : null}
-
-      {/* Playback Controls */}
-      <div className="playback-controls">
-        <div className="control-buttons">
-          <button className="control-btn">⏮</button>
-          <button className="control-btn">⏯</button>
-          <button className="control-btn">⏭</button>
-        </div>
-        <div className="progress-bar">
-          <span>1:23</span>
-          <div className="progress-track">
-            <div className="progress" style={{ width: '30%' }}></div>
-          </div>
-          <span>3:45</span>
-        </div>
-      </div>
+       {searchQuery.trim() !== '' ? (
+         isSearching ? (
+           <div className="search-results">
+             <p>Searching...</p>
+           </div>
+         ) : searchResults.length === 0 ? (
+           <div className="search-results">
+             <p>No results found</p>
+           </div>
+         ) : (
+           <div className="search-results">
+             {searchResults.map((entry, index) => (
+               <div key={index} className="search-result-item">
+                 <div className="station-image-placeholder">
+                   {entry.albumArt ? (
+                     <img src={entry.albumArt} alt={`${entry.title} album art`} className="album-art" />
+                   ) : (
+                     <span className="station-icon">🎵</span>
+                   )}
+                 </div>
+                 <div className="station-info">
+                   <h4>{entry.title}</h4>
+                   <p className="station-genre">{entry.artist}</p>
+                   <p className="station-listeners">{entry.album}</p>
+                 </div>
+               </div>
+             ))}
+           </div>
+         )
+       ) : null}
     </div>
   )
 }

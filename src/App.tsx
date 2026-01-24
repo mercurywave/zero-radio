@@ -3,6 +3,7 @@ import { MusicCacheService } from './services/musicCacheService'
 import ProgressPopover from './components/ProgressPopover'
 import FolderSelectView from './components/FolderSelectView'
 import RadioStationView from './components/RadioStationView'
+import PlaybackControls from './components/PlaybackControls'
 import './index.css'
 import './components/ProgressPopover.css'
 import { get, set } from 'idb-keyval'
@@ -16,6 +17,11 @@ const App: React.FC = () => {
   const [progress, setProgress] = useState(0)
   const [currentFile, setCurrentFile] = useState(0)
   const [totalFiles, setTotalFiles] = useState(0)
+  
+  // Playback controls state
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [playbackProgress, setPlaybackProgress] = useState(0)
+  const [playbackDuration, setPlaybackDuration] = useState(180) // Default to 3 minutes
 
   // Set up progress tracking - pass a callback function that updates our local state
   cacheService.setOnProgress((progress, current, total) => {
@@ -42,7 +48,17 @@ const App: React.FC = () => {
           onFolderSelected={() => setCurrentView('radioStations')}
         />
       ) : (
-        <RadioStationView />
+        <>
+          <RadioStationView />
+          <PlaybackControls
+            isPlaying={isPlaying}
+            progress={playbackProgress}
+            duration={playbackDuration}
+            onPlayPause={() => setIsPlaying(!isPlaying)}
+            onPrevious={() => {}}
+            onNext={() => {}}
+          />
+        </>
       )}
       <ProgressPopover
         isVisible={isProcessing}
