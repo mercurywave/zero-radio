@@ -1,5 +1,3 @@
-import { FileSystemFileHandle, FileSystemDirectoryHandle } from '../types/fileSystemTypes';
-
 // Supported audio file extensions
 const AUDIO_EXTENSIONS = ['.mp3', '.m4a', '.ogg', '.wav', '.flac', '.aac'];
 

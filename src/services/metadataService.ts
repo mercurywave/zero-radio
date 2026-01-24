@@ -1,5 +1,4 @@
 import { parseFile, parseBlob } from 'music-metadata';
-import { FileSystemFileHandle } from '../types/fileSystemTypes';
 
 export interface AudioMetadata {
   title: string | undefined;
