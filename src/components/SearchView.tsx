@@ -14,7 +14,7 @@ const SearchView: React.FC<SearchViewProps> = ({
   isSearching 
 }) => {
   return (
-    <div className="radio-stations-view">
+    <div className="search-wrapper">
       {/* Search bar at top middle */}
       <div className="search-container">
         <input
