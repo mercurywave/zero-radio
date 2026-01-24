@@ -1,9 +1,8 @@
 import React from 'react';
+import { AudioTrack } from '../services/musicCacheService';
 
 type PlaybackControlsProps = {
-  currentTrack?: string;
-  currentArtist?: string;
-  currentAlbum?: string;
+  currentTrack: AudioTrack | null;
   isPlaying: boolean;
   progress: number;
   duration: number;
@@ -14,8 +13,6 @@ type PlaybackControlsProps = {
 
 const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   currentTrack,
-  currentArtist,
-  currentAlbum,
   isPlaying,
   progress,
   duration,

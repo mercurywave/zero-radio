@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { MusicCacheService } from './services/musicCacheService'
+import { AudioTrack, MusicCacheService } from './services/musicCacheService'
 import ProgressPopover from './components/ProgressPopover'
 import FolderSelectView from './components/FolderSelectView'
 import RadioStationView from './components/RadioStationView'
 import PlaybackControls from './components/PlaybackControls'
 import './index.css'
 import './components/ProgressPopover.css'
-import { get, set } from 'idb-keyval'
 import { tryUseCachedFolder } from './utils/fileHelpers'
 
 const cacheService = new MusicCacheService();
@@ -17,14 +16,14 @@ const App: React.FC = () => {
   const [progress, setProgress] = useState(0)
   const [currentFile, setCurrentFile] = useState(0)
   const [totalFiles, setTotalFiles] = useState(0)
-  
+
   // Playback controls state
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackProgress, setPlaybackProgress] = useState(0)
   const [playbackDuration, setPlaybackDuration] = useState(180) // Default to 3 minutes
-  
+
   // Current track state
-  const [currentTrack, setCurrentTrack] = useState<any>(null)
+  const [currentTrack, setCurrentTrack] = useState<AudioTrack | null>(null)
   const [currentArtist, setCurrentArtist] = useState<string>('')
   const [currentAlbum, setCurrentAlbum] = useState<string>('')
 
@@ -37,14 +36,16 @@ const App: React.FC = () => {
   });
 
   // Handle track playback
-  const handlePlayTrack = (track: any) => {
+  const handlePlayTrack = (track: AudioTrack | null) => {
     setCurrentTrack(track);
-    setCurrentArtist(track.artist || '');
-    setCurrentAlbum(track.album || '');
-    setIsPlaying(true);
+    if (track) {
+      setCurrentArtist(track.artist || '');
+      setCurrentAlbum(track.album || '');
+      // Set a default duration for the track
+      setPlaybackDuration(track.duration ? track.duration : 180);
+    }
+    setIsPlaying(!!track);
     setPlaybackProgress(0);
-    // Set a default duration for the track
-    setPlaybackDuration(track.duration ? track.duration : 180);
   };
 
   // Check for saved folder on initial load
@@ -64,18 +65,16 @@ const App: React.FC = () => {
           onFolderSelected={() => setCurrentView('radioStations')}
         />
       ) : (
-        <>  
+        <>
           <RadioStationView onPlayTrack={handlePlayTrack} />
           <PlaybackControls
-            currentTrack={currentTrack ? currentTrack.title : undefined}
-            currentArtist={currentArtist}
-            currentAlbum={currentAlbum}
+            currentTrack={currentTrack}
             isPlaying={isPlaying}
             progress={playbackProgress}
             duration={playbackDuration}
             onPlayPause={() => setIsPlaying(!isPlaying)}
-            onPrevious={() => {}}
-            onNext={() => {}}
+            onPrevious={() => { }}
+            onNext={() => { }}
           />
         </>
       )}

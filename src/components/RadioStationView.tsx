@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import SearchView, { performSearch } from './SearchView';
-import { MusicCacheService } from '../services/musicCacheService';
+import { AudioTrack, MusicCacheService } from '../services/musicCacheService';
 
 const cacheService = new MusicCacheService();
 
 interface RadioStationViewProps {
-  onPlayTrack?: (track: any) => void;
+  onPlayTrack?: (track: AudioTrack) => void;
 }
 
 const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<AudioTrack[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // Mock data for radio stations - will be replaced with actual library data
