@@ -117,46 +117,7 @@ const RadioStationView: React.FC<RadioStationViewProps> = () => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  // Render radio station tiles when no search query
-  const renderStationTiles = () => {
-    return (
-      <>
-        {/* Suggested Stations */}
-        <div className="section-title">
-          <h3>Suggested Stations</h3>
-        </div>
-        <div className="radio-station-grid">
-          {suggestedStations.map((station) => (
-            <div key={station.id} className="radio-station-card">
-              <div className="station-image-placeholder">
-                <span className="station-icon">📻</span>
-              </div>
-              <div className="station-info">
-                <h4>{station.name}</h4>
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Recent Stations */}
-        <div className="section-title">
-          <h3>Recently Played</h3>
-        </div>
-        <div className="radio-station-grid">
-          {recentStations.map((station) => (
-            <div key={station.id} className="radio-station-card">
-              <div className="station-image-placeholder">
-                <span className="station-icon">📻</span>
-              </div>
-              <div className="station-info">
-                <h4>{station.name}</h4>
-              </div>
-            </div>
-          ))}
-        </div>
-      </>
-    );
-  };
 
   return (
     <div className="radio-stations-view">
@@ -167,9 +128,50 @@ const RadioStationView: React.FC<RadioStationViewProps> = () => {
         isSearching={isSearching}
       />
       
-      {searchQuery.trim() === '' && renderStationTiles()}
+      {searchQuery.trim() === '' && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} />}
     </div>
   )
 }
+
+// Render radio station tiles when no search query
+const RenderStationTiles = ({ suggestedStations, recentStations }: { suggestedStations: any[], recentStations: any[] }) => {
+  return (
+    <>
+      {/* Suggested Stations */}
+      <div className="section-title">
+        <h3>Suggested Stations</h3>
+      </div>
+      <div className="radio-station-grid">
+        {suggestedStations.map((station) => (
+          <div key={station.id} className="radio-station-card">
+            <div className="station-image-placeholder">
+              <span className="station-icon">📻</span>
+            </div>
+            <div className="station-info">
+              <h4>{station.name}</h4>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recent Stations */}
+      <div className="section-title">
+        <h3>Recently Played</h3>
+      </div>
+      <div className="radio-station-grid">
+        {recentStations.map((station) => (
+          <div key={station.id} className="radio-station-card">
+            <div className="station-image-placeholder">
+              <span className="station-icon">📻</span>
+            </div>
+            <div className="station-info">
+              <h4>{station.name}</h4>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+};
 
 export default RadioStationView;
