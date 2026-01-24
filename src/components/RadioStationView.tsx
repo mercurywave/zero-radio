@@ -5,10 +5,10 @@ import { MusicCacheService } from '../services/musicCacheService';
 const cacheService = new MusicCacheService();
 
 interface RadioStationViewProps {
-  // This component doesn't need any props in this version
+  onPlayTrack?: (track: any) => void;
 }
 
-const RadioStationView: React.FC<RadioStationViewProps> = () => {
+const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -76,6 +76,7 @@ const RadioStationView: React.FC<RadioStationViewProps> = () => {
         searchQuery={searchQuery}
         searchResults={searchResults}
         isSearching={isSearching}
+        onPlayTrack={onPlayTrack}
       />
       
       {searchQuery.trim() === '' && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} />}

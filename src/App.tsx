@@ -22,6 +22,11 @@ const App: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackProgress, setPlaybackProgress] = useState(0)
   const [playbackDuration, setPlaybackDuration] = useState(180) // Default to 3 minutes
+  
+  // Current track state
+  const [currentTrack, setCurrentTrack] = useState<any>(null)
+  const [currentArtist, setCurrentArtist] = useState<string>('')
+  const [currentAlbum, setCurrentAlbum] = useState<string>('')
 
   // Set up progress tracking - pass a callback function that updates our local state
   cacheService.setOnProgress((progress, current, total) => {
@@ -30,6 +35,17 @@ const App: React.FC = () => {
     setTotalFiles(total);
     setIsProcessing(current < total);
   });
+
+  // Handle track playback
+  const handlePlayTrack = (track: any) => {
+    setCurrentTrack(track);
+    setCurrentArtist(track.artist || '');
+    setCurrentAlbum(track.album || '');
+    setIsPlaying(true);
+    setPlaybackProgress(0);
+    // Set a default duration for the track
+    setPlaybackDuration(track.duration ? track.duration : 180);
+  };
 
   // Check for saved folder on initial load
   useEffect(() => {
@@ -48,9 +64,12 @@ const App: React.FC = () => {
           onFolderSelected={() => setCurrentView('radioStations')}
         />
       ) : (
-        <>
-          <RadioStationView />
+        <>  
+          <RadioStationView onPlayTrack={handlePlayTrack} />
           <PlaybackControls
+            currentTrack={currentTrack ? currentTrack.title : undefined}
+            currentArtist={currentArtist}
+            currentAlbum={currentAlbum}
             isPlaying={isPlaying}
             progress={playbackProgress}
             duration={playbackDuration}
