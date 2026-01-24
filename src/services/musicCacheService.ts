@@ -190,6 +190,26 @@ export class MusicCacheService {
     });
   }
 
+  async getAlbumArtById(id: string): Promise<AlbumArtEntry | null> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([ALBUM_ART_STORE], 'readonly');
+      const store = transaction.objectStore(ALBUM_ART_STORE);
+      const request = store.get(id);
+
+      request.onsuccess = () => {
+        resolve(request.result || null);
+      };
+
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  }
+
   private async storeEntries(entries: MusicLibraryEntry[]): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized');

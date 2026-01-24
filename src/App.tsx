@@ -124,7 +124,46 @@ const RadioStationView: React.FC = () => {
           entry.album.toLowerCase().includes(searchQuery.toLowerCase())
         );
         
-        setSearchResults(results);
+        // Fetch album art for each result
+        const resultsWithArt = await Promise.all(
+          results.map(async (entry) => {
+            try {
+              const albumArt = await cacheService.getAlbumArtById(entry.id);
+              let albumArtUrl = null;
+              
+              if (albumArt && albumArt.data) {
+                // Handle different data types that might be returned
+                if (albumArt.data instanceof Blob) {
+                  albumArtUrl = URL.createObjectURL(albumArt.data);
+                } else if(albumArt.data instanceof Uint8Array) {
+                  // Convert Uint8Array to Blob for URL creation
+                  const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
+                  albumArtUrl = URL.createObjectURL(blob);
+                } else if (albumArt.data instanceof ArrayBuffer) {
+                  // Convert ArrayBuffer to Blob for URL creation
+                  const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
+                  albumArtUrl = URL.createObjectURL(blob);
+                } else if (typeof albumArt.data === 'string') {
+                  // If it's already a data URL, use it directly
+                  albumArtUrl = albumArt.data;
+                }
+              }
+              
+              return {
+                ...entry,
+                albumArt: albumArtUrl
+              };
+            } catch (error) {
+              console.error('Error fetching album art:', error);
+              return {
+                ...entry,
+                albumArt: null
+              };
+            }
+          })
+        );
+        
+        setSearchResults(resultsWithArt);
         setIsSearching(false);
       } catch (error) {
         console.error('Search error:', error);
@@ -161,7 +200,11 @@ const RadioStationView: React.FC = () => {
           {searchResults.map((entry, index) => (
             <div key={index} className="search-result-item">
               <div className="station-image-placeholder">
-                <span className="station-icon">🎵</span>
+                {entry.albumArt ? (
+                  <img src={entry.albumArt} alt={`${entry.title} album art`} className="album-art" />
+                ) : (
+                  <span className="station-icon">🎵</span>
+                )}
               </div>
               <div className="station-info">
                 <h4>{entry.title}</h4>
