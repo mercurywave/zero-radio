@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AudioTrack, MusicCacheService } from './services/musicCacheService'
 import ProgressPopover from './components/ProgressPopover'
 import FolderSelectView from './components/FolderSelectView'
@@ -6,7 +6,8 @@ import RadioStationView from './components/RadioStationView'
 import PlaybackControls from './components/PlaybackControls'
 import './index.css'
 import './components/ProgressPopover.css'
-import { tryUseCachedFolder, loadAudioFileFromTrack } from './utils/fileHelpers'
+import { tryUseCachedFolder } from './utils/fileHelpers'
+import { playbackService, PlaybackState } from './services/playbackService'
 
 const cacheService = new MusicCacheService();
 
@@ -17,18 +18,18 @@ const App: React.FC = () => {
   const [currentFile, setCurrentFile] = useState(0)
   const [totalFiles, setTotalFiles] = useState(0)
 
-  // Playback controls state
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [playbackProgress, setPlaybackProgress] = useState(0)
-  const [playbackDuration, setPlaybackDuration] = useState(180) // Default to 3 minutes
+  // Playback controls state managed by PlaybackService
+  const [playbackState, setPlaybackState] = useState<PlaybackState>({
+    isPlaying: false,
+    currentTrack: null,
+    progress: 0,
+    duration: 0
+  })
 
-  // Current track state
+  // Current track state (synced with playback service)
   const [currentTrack, setCurrentTrack] = useState<AudioTrack | null>(null)
   const [currentArtist, setCurrentArtist] = useState<string>('')
   const [currentAlbum, setCurrentAlbum] = useState<string>('')
-  
-  // Audio element ref
-  const audioElementRef = useRef<HTMLAudioElement | null>(null)
 
   // Set up progress tracking - pass a callback function that updates our local state
   cacheService.setOnProgress((progress, current, total) => {
@@ -38,81 +39,17 @@ const App: React.FC = () => {
     setIsProcessing(current < total);
   });
 
-  // Handle track playback
+  // Handle track playback using PlaybackService
   const handlePlayTrack = async (track: AudioTrack | null) => {
-    setCurrentTrack(track);
-    
     if (track) {
       try {
-        // Load the actual audio file from disk
-        const audioFile = await loadAudioFileFromTrack(track);
-        
-        if (!audioFile) {
-          console.error('Could not load audio file');
-          return;
-        }
-
-        // Create audio element if it doesn't exist
-        let audioElement = audioElementRef.current;
-        if (!audioElement) {
-          audioElement = new Audio();
-          audioElementRef.current = audioElement;
-          
-          // Set up event listeners for progress tracking
-          const handleTimeUpdate = () => {
-            if (audioElement) {
-              setPlaybackProgress(audioElement.currentTime);
-            }
-          };
-          
-          const handleEnded = () => {
-            setIsPlaying(false);
-          };
-          
-          const handleLoadedMetadata = () => {
-            if (audioElement && audioElement.duration) {
-              setPlaybackDuration(audioElement.duration);
-            }
-          };
-
-          audioElement.addEventListener('timeupdate', handleTimeUpdate);
-          audioElement.addEventListener('ended', handleEnded);
-          audioElement.addEventListener('loadedmetadata', handleLoadedMetadata);
-        }
-
-        // Load the file into the audio element
-        const objectUrl = URL.createObjectURL(audioFile);
-        if (audioElement) {
-          audioElement.src = objectUrl;
-          
-          // Set duration from metadata or wait for loadedmetadata event
-          if (track.duration) {
-            setPlaybackDuration(track.duration);
-          }
-
-          try {
-            await audioElement.play();
-            setIsPlaying(true);
-          } catch (playError) {
-            console.error('Error playing audio:', playError);
-          }
-        }
-
-        // Update track info
-        setCurrentArtist(track.artist || '');
-        setCurrentAlbum(track.album || '');
+        await playbackService.play(track);
       } catch (error) {
-        console.error('Error handling track playback:', error);
+        console.error('Error playing track:', error);
       }
     } else {
-      // Stop playback if track is null
-      if (audioElementRef.current) {
-        audioElementRef.current.pause();
-      }
-      setIsPlaying(false);
+      playbackService.stop();
     }
-    
-    setPlaybackProgress(0);
   };
 
   // Check for saved folder on initial load
@@ -124,20 +61,28 @@ const App: React.FC = () => {
       }
     });
   }, [])
-  
-  // Clean up audio element on unmount
+
+  // Set up playback service callback
   useEffect(() => {
-    return () => {
-      if (audioElementRef.current) {
-        const audio = audioElementRef.current;
-        audio.pause();
-        audio.removeAttribute('src');
-        audio.load();
-        
-        // Clean up event listeners by creating a new element
-        const newAudio = new Audio();
-        audioElementRef.current = newAudio;
+    const handlePlaybackStateChange = (state: PlaybackState) => {
+      setPlaybackState(state);
+      
+      if (state.currentTrack) {
+        setCurrentTrack(state.currentTrack);
+        setCurrentArtist(state.currentTrack.artist || '');
+        setCurrentAlbum(state.currentTrack.album || '');
+      } else {
+        setCurrentTrack(null);
+        setCurrentArtist('');
+        setCurrentAlbum('');
       }
+    };
+
+    playbackService.setOnPlaybackStateChange(handlePlaybackStateChange);
+
+    return () => {
+      // Cleanup on unmount
+      playbackService.destroy();
     };
   }, [])
 
@@ -152,19 +97,11 @@ const App: React.FC = () => {
           <RadioStationView onPlayTrack={handlePlayTrack} />
            <PlaybackControls
              currentTrack={currentTrack}
-             isPlaying={isPlaying}
-             progress={playbackProgress}
-             duration={playbackDuration}
+             isPlaying={playbackState.isPlaying}
+             progress={playbackState.progress}
+             duration={playbackState.duration}
              onPlayPause={async () => {
-               const audio = audioElementRef.current;
-               if (audio) {
-                 if (isPlaying) {
-                   await audio.pause();
-                 } else {
-                   await audio.play();
-                 }
-                 setIsPlaying(!isPlaying);
-               }
+               await playbackService.togglePlayPause();
              }}
              onPrevious={() => { }}
              onNext={() => { }}
