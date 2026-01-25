@@ -29,9 +29,10 @@ export interface AlbumArtEntry {
 
 // IndexedDB database name and version
 const DB_NAME = 'MusicLibraryDB';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const MUSIC_LIBRARY_STORE = 'musicLibrary';
 const ALBUM_ART_STORE = 'albumArt';
+const RADIO_STATIONS_STORE = 'radioStations';
 
 export class MusicCacheService {
   private db: IDBDatabase | null = null;
@@ -67,6 +68,11 @@ export class MusicCacheService {
         if (!db.objectStoreNames.contains(ALBUM_ART_STORE)) {
           const artStore = db.createObjectStore(ALBUM_ART_STORE, { keyPath: 'id' });
           artStore.createIndex('filePath', 'filePath', { unique: true });
+        }
+
+        if (!db.objectStoreNames.contains(RADIO_STATIONS_STORE)) {
+          const stationStore = db.createObjectStore(RADIO_STATIONS_STORE, { keyPath: 'id' });
+          stationStore.createIndex('name', 'name', { unique: false });
         }
       };
     });
