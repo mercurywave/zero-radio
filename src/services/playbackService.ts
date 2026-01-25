@@ -9,7 +9,7 @@ export interface PlaybackState {
   progress: number;
   duration: number;
   playbackHistory: AudioTrack[];
-  selectedStation: string | null;
+  selectedStation: RadioStation | null;
   nextTrack: AudioTrack | null;
 }
 
@@ -18,7 +18,7 @@ export class PlaybackService {
   private onPlaybackStateChange?: (state: PlaybackState) => void;
   private currentTrack: AudioTrack | null = null;
   private playbackHistory: AudioTrack[] = [];
-  private selectedStation: string | null = null;
+  private selectedStation: RadioStation | null = null;
   private nextTrack: AudioTrack | null = null;
 
   constructor() {
@@ -34,7 +34,8 @@ export class PlaybackService {
         this.notifyStateChange();
       });
 
-      this.audioElement.addEventListener('ended', () => {
+      this.audioElement.addEventListener('ended', async () => {
+        await this.playNextTrack();
         this.notifyStateChange();
       });
 
@@ -44,20 +45,20 @@ export class PlaybackService {
     }
   }
 
-  private notifyStateChange(): void {
-    if (this.onPlaybackStateChange && this.audioElement) {
-      const state: PlaybackState = {
-        isPlaying: !this.audioElement.paused,
-        currentTrack: this.currentTrack,
-        progress: this.audioElement.currentTime,
-        duration: this.audioElement.duration || 0,
-        playbackHistory: [...this.playbackHistory],
-        selectedStation: this.selectedStation,
-        nextTrack: this.nextTrack
-      };
-      this.onPlaybackStateChange(state);
-    }
-  }
+   private notifyStateChange(): void {
+     if (this.onPlaybackStateChange && this.audioElement) {
+       const state: PlaybackState = {
+         isPlaying: !this.audioElement.paused,
+         currentTrack: this.currentTrack,
+         progress: this.audioElement.currentTime,
+         duration: this.audioElement.duration || 0,
+         playbackHistory: [...this.playbackHistory],
+         selectedStation: this.selectedStation,
+         nextTrack: this.nextTrack
+       };
+       this.onPlaybackStateChange(state);
+     }
+   }
 
   /**
    * Play a track
@@ -186,16 +187,7 @@ export class PlaybackService {
     await radioStationService.updateStationFromTracks(tempStation, [track]);
 
     // Set as selected station
-    this.selectedStation = tempStation.id;
-    this.notifyStateChange();
-  }
-
-  /**
-   * Set the selected radio station
-   * @param stationId The ID of the selected station
-   */
-  public setSelectedStation(stationId: string | null): void {
-    this.selectedStation = stationId;
+    this.selectedStation = tempStation;
     this.notifyStateChange();
   }
 
@@ -206,6 +198,26 @@ export class PlaybackService {
   public setNextTrack(track: AudioTrack | null): void {
     this.nextTrack = track;
     this.notifyStateChange();
+  }
+
+  /**
+   * Play the next track for the currently selected station
+   */
+  public async playNextTrack(): Promise<void> {
+    if (this.selectedStation) {
+      const station = this.selectedStation;
+      if (station) {
+        const nextTrackScore = await radioStationService.selectNextTrackForStation(
+          station,
+          this.playbackHistory
+        );
+        
+        if (nextTrackScore && nextTrackScore.track) {
+          this.nextTrack = nextTrackScore.track;
+          await this.play(nextTrackScore.track);
+        }
+      }
+    }
   }
 
   /**
