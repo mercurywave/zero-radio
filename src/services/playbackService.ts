@@ -6,12 +6,18 @@ export interface PlaybackState {
   currentTrack: AudioTrack | null;
   progress: number;
   duration: number;
+  playbackHistory: AudioTrack[];
+  selectedStation: string | null;
+  nextTrack: AudioTrack | null;
 }
 
 export class PlaybackService {
   private audioElement: HTMLAudioElement | null = null;
   private onPlaybackStateChange?: (state: PlaybackState) => void;
   private currentTrack: AudioTrack | null = null;
+  private playbackHistory: AudioTrack[] = [];
+  private selectedStation: string | null = null;
+  private nextTrack: AudioTrack | null = null;
 
   constructor() {
     this.createAudioElement();
@@ -42,7 +48,10 @@ export class PlaybackService {
         isPlaying: !this.audioElement.paused,
         currentTrack: this.currentTrack,
         progress: this.audioElement.currentTime,
-        duration: this.audioElement.duration || 0
+        duration: this.audioElement.duration || 0,
+        playbackHistory: [...this.playbackHistory],
+        selectedStation: this.selectedStation,
+        nextTrack: this.nextTrack
       };
       this.onPlaybackStateChange(state);
     }
@@ -56,6 +65,11 @@ export class PlaybackService {
     if (!track) return;
 
     try {
+      // Add current track to history before playing new one
+      if (this.currentTrack && this.currentTrack.id !== track.id) {
+        this.playbackHistory.push(this.currentTrack);
+      }
+      
       this.currentTrack = track;
       const audioFile = await loadAudioFileFromTrack(track);
 
@@ -104,6 +118,10 @@ export class PlaybackService {
       this.audioElement.removeAttribute('src');
       this.audioElement.load();
       this.currentTrack = null;
+      // Clear history on stop
+      this.playbackHistory = [];
+      this.selectedStation = null;
+      this.nextTrack = null;
       this.notifyStateChange();
     }
   }
@@ -129,20 +147,49 @@ export class PlaybackService {
   }
 
   /**
+   * Set the selected radio station
+   * @param stationId The ID of the selected station
+   */
+  public setSelectedStation(stationId: string | null): void {
+    this.selectedStation = stationId;
+    this.notifyStateChange();
+  }
+
+  /**
+   * Set the next track to play
+   * @param track The AudioTrack that will play next
+   */
+  public setNextTrack(track: AudioTrack | null): void {
+    this.nextTrack = track;
+    this.notifyStateChange();
+  }
+
+  /**
+   * Clear playback history
+   */
+  public clearHistory(): void {
+    this.playbackHistory = [];
+    this.notifyStateChange();
+  }
+
+  /**
    * Set callback for playback state changes
    */
   public setOnPlaybackStateChange(callback: (state: PlaybackState) => void): void {
     this.onPlaybackStateChange = callback;
-    // Send initial state
-    if (this.audioElement) {
-      const state: PlaybackState = {
-        isPlaying: !this.audioElement.paused,
-        currentTrack: this.currentTrack,
-        progress: this.audioElement.currentTime,
-        duration: this.audioElement.duration || 0
-      };
-      callback(state);
-    }
+     // Send initial state
+     if (this.audioElement) {
+       const state: PlaybackState = {
+         isPlaying: !this.audioElement.paused,
+         currentTrack: this.currentTrack,
+         progress: this.audioElement.currentTime,
+         duration: this.audioElement.duration || 0,
+         playbackHistory: [...this.playbackHistory],
+         selectedStation: this.selectedStation,
+         nextTrack: this.nextTrack
+       };
+       callback(state);
+     }
   }
 
   /**

@@ -23,7 +23,10 @@ const App: React.FC = () => {
     isPlaying: false,
     currentTrack: null,
     progress: 0,
-    duration: 0
+    duration: 0,
+    playbackHistory: [],
+    selectedStation: null,
+    nextTrack: null
   })
 
   // Current track state (synced with playback service)
