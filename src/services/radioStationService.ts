@@ -267,20 +267,130 @@ export class RadioStationService {
     });
   }
 
-  /**
-   * Generate a unique ID for a station
-   */
-  private generateId(name: string): string {
-    // Simple hash function for generating IDs from names
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      const char = name.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    return `station_${hash.toString()}`;
-  }
-}
+   /**
+    * Generate a unique ID for a station
+    */
+   private generateId(name: string): string {
+     // Simple hash function for generating IDs from names
+     let hash = 0;
+     for (let i = 0; i < name.length; i++) {
+       const char = name.charCodeAt(i);
+       hash = ((hash << 5) - hash) + char;
+       hash = hash & hash; // Convert to 32bit integer
+     }
+     return `station_${hash.toString()}`;
+   }
+
+   /**
+    * Update a radio station's criteria based on an array of AudioTracks
+    * Averages the criteria values from all tracks
+    */
+   public async updateStationFromTracks(
+     id: string,
+     tracks: AudioTrack[]
+   ): Promise<RadioStation> {
+     const existing = await this.getStationById(id);
+     if (!existing) {
+       throw new Error('Station not found');
+     }
+
+     // Calculate average criteria from the tracks
+     const averagedCriteria = this.calculateAverageCriteria(tracks, existing.criteria);
+
+     const updatedStation: RadioStation = {
+       ...existing,
+       criteria: averagedCriteria,
+       updatedAt: new Date()
+     };
+
+     await this.storeStation(updatedStation);
+     return updatedStation;
+   }
+
+   /**
+    * Calculate average criteria from an array of tracks
+    */
+   private calculateAverageCriteria(
+     tracks: AudioTrack[],
+     existingCriteria: RadioStationCriteria[]
+   ): RadioStationCriteria[] {
+     if (tracks.length === 0) {
+       return existingCriteria;
+     }
+
+     // Collect all attribute values from tracks
+     const attributeValues = new Map<string, { values: Set<string>; count: number }>();
+
+     for (const track of tracks) {
+       // Extract artist
+       if (track.artist) {
+         const key = `artist:${track.artist}`;
+         if (!attributeValues.has(key)) {
+           attributeValues.set(key, { values: new Set(), count: 0 });
+         }
+         attributeValues.get(key)!.count++;
+       }
+
+       // Extract album
+       if (track.album) {
+         const key = `album:${track.album}`;
+         if (!attributeValues.has(key)) {
+           attributeValues.set(key, { values: new Set(), count: 0 });
+         }
+         attributeValues.get(key)!.count++;
+       }
+
+       // Extract genres (comma-separated)
+       if (track.genre) {
+         const genres = track.genre.split(',').map(g => g.trim());
+         for (const genre of genres) {
+           const key = `genre:${genre}`;
+           if (!attributeValues.has(key)) {
+             attributeValues.set(key, { values: new Set(), count: 0 });
+           }
+           attributeValues.get(key)!.count++;
+         }
+       }
+
+       // Extract mood
+       if (track.mood) {
+         const key = `mood:${track.mood}`;
+         if (!attributeValues.has(key)) {
+           attributeValues.set(key, { values: new Set(), count: 0 });
+         }
+         attributeValues.get(key)!.count++;
+       }
+
+       // Extract decade from year
+       if (track.year) {
+         const decade = Math.floor(track.year / 10) * 10;
+         const key = `decade:${decade}`;
+         if (!attributeValues.has(key)) {
+           attributeValues.set(key, { values: new Set(), count: 0 });
+         }
+         attributeValues.get(key)!.count++;
+       }
+     }
+
+     // Calculate average weights for each attribute value
+     const averagedCriteria: RadioStationCriteria[] = [];
+
+     for (const [key, data] of attributeValues.entries()) {
+       const [attribute, value] = key.split(':') as [string, string];
+       const weight = data.count / tracks.length;
+
+       if (weight > 0) {
+         averagedCriteria.push({
+           attribute: attribute as RadioStationCriteria['attribute'],
+           value,
+           weight
+         });
+       }
+     }
+
+     return averagedCriteria;
+   }
+ }
 
 // Singleton instance
 const musicCacheService = new MusicCacheService();
