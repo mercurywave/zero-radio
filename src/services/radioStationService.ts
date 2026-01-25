@@ -303,27 +303,18 @@ export class RadioStationService {
      * Averages the criteria values from all tracks
      */
     public async updateStationFromTracks(
-      id: string,
+      station: RadioStation,
       tracks: AudioTrack[]
-    ): Promise<RadioStation> {
-      const existing = await this.getStationById(id);
-      if (!existing) {
-        throw new Error('Station not found');
-      }
-
+    ): Promise<void> {
       // Calculate average criteria from the tracks
-      const averagedCriteria = this.calculateAverageCriteria(tracks, existing.criteria);
+      const averagedCriteria = this.calculateAverageCriteria(tracks, station.criteria);
 
-      const updatedStation: RadioStation = {
-        ...existing,
-        criteria: averagedCriteria,
-        updatedAt: new Date()
-      };
+      station.updatedAt = new Date();
+      station.criteria = averagedCriteria;
 
-      if (!updatedStation.isTemporary) {
-        await this.storeStation(updatedStation);
+      if (!station.isTemporary) {
+        await this.storeStation(station);
       }
-      return updatedStation;
     }
 
    /**
