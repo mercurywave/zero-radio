@@ -46,7 +46,7 @@ const App: React.FC = () => {
   const handlePlayTrack = async (track: AudioTrack | null) => {
     if (track) {
       try {
-        await playbackService.play(track);
+        await playbackService.playSpecificTrack(track);
       } catch (error) {
         console.error('Error playing track:', error);
       }
