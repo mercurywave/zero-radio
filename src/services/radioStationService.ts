@@ -130,30 +130,55 @@ export class RadioStationService {
   /**
    * Select tracks for a radio station based on weighted criteria
    */
-  public async selectTracksForStation(
+  public async selectNextTrackForStation(
     station: RadioStation,
+    recent: AudioTrack[],
     limit: number = 20
-  ): Promise<TrackScore[]> {
+  ): Promise<TrackScore | null> {
     // Get all tracks from the music library
     const allTracks = await this.musicCache.getAllCachedEntries();
 
     if (allTracks.length === 0) {
-      return [];
+      return null;
     }
 
     // Calculate scores for each track
     const scoredTracks: TrackScore[] = [];
 
-    for (const track of allTracks) {
-      const score = this.calculateTrackScore(track as AudioTrack, station.criteria);
-      scoredTracks.push({ track: track as AudioTrack, score });
-    }
+     for (const track of allTracks) {
+       const score = this.calculateTrackScore(track as AudioTrack, station.criteria);
+       let index = recent.findIndex(t => t.id === track.id);
+       if(index >= 0) {
+         // Apply penalty to recently played songs
+         // The last played track (index 0) gets a 100% penalty (score becomes 0)
+         // Penalty decreases linearly: after 20 tracks, penalty is 0%
+         const penalty = Math.max(0, 1 - index / 20);
+         scoredTracks.push({ track: track as AudioTrack, score: score * (1 - penalty) });
+       } else if(score > 0){
+         scoredTracks.push({ track: track as AudioTrack, score });
+       }
+     }
 
-    // Sort by score in descending order
-    scoredTracks.sort((a, b) => b.score - a.score);
+     // Sort by score in descending order
+     scoredTracks.sort((a, b) => b.score - a.score);
 
-    // Return top N tracks
-    return scoredTracks.slice(0, limit);
+     // Use weighted random selection with easing function
+     // Higher scores are more likely to be picked, but lower scores still have a chance
+     const totalScore = scoredTracks.reduce((sum, item) => sum + item.score, 0);
+     if (totalScore <= 0) return null;
+
+     let randomValue = Math.random() * totalScore;
+     for (let i = 0; i < scoredTracks.length; i++) {
+       const track = scoredTracks[i];
+       if (!track) continue;
+       randomValue -= track.score;
+       if (randomValue <= 0) {
+         return track || null;
+       }
+     }
+
+     // Fallback to top track
+     return scoredTracks[0] ?? null;
   }
 
   /**
