@@ -132,8 +132,7 @@ export class RadioStationService {
    */
   public async selectNextTrackForStation(
     station: RadioStation,
-    recent: AudioTrack[],
-    limit: number = 20
+    recent: AudioTrack[]
   ): Promise<TrackScore | null> {
     // Get all tracks from the music library
     const allTracks = await this.musicCache.getAllCachedEntries();
@@ -428,5 +427,5 @@ export class RadioStationService {
  }
 
 // Singleton instance
-const musicCacheService = new MusicCacheService();
+const musicCacheService = MusicCacheService.getInstance();
 export const radioStationService = new RadioStationService(musicCacheService);

@@ -9,7 +9,7 @@ import './components/ProgressPopover.css'
 import { tryUseCachedFolder } from './utils/fileHelpers'
 import { playbackService, PlaybackState } from './services/playbackService'
 
-const cacheService = new MusicCacheService();
+const cacheService = MusicCacheService.getInstance();
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations'>('folderSelect')

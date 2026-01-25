@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SearchView, { performSearch } from './SearchView';
 import { AudioTrack, MusicCacheService } from '../services/musicCacheService';
 
-const cacheService = new MusicCacheService();
+const cacheService = MusicCacheService.getInstance();
 
 interface RadioStationViewProps {
   onPlayTrack?: (track: AudioTrack) => void;

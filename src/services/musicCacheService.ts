@@ -35,10 +35,18 @@ const ALBUM_ART_STORE = 'albumArt';
 const RADIO_STATIONS_STORE = 'radioStations';
 
 export class MusicCacheService {
+  private static instance: MusicCacheService | null = null;
   private db: IDBDatabase | null = null;
   private onProgressCallback: ((progress: number, current: number, total: number) => void) | null = null;
 
-  constructor() {
+  private constructor() {
+  }
+
+  public static getInstance(): MusicCacheService {
+    if (!MusicCacheService.instance) {
+      MusicCacheService.instance = new MusicCacheService();
+    }
+    return MusicCacheService.instance;
   }
 
   public async initDB(): Promise<void> {
