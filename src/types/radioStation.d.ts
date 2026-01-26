@@ -9,8 +9,10 @@ export interface RadioStation {
   isTemporary?: boolean;
 }
 
+export type RadioStationAttribute = 'artist' | 'album' | 'genre' | 'mood' | 'decade';
+
 export interface RadioStationCriteria {
-  attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade';
+  attribute: RadioStationAttribute;
   value: string;
   weight: number; // 0-1 scale
 }

@@ -184,7 +184,9 @@ export class PlaybackService {
     });
 
     // Update the station's criteria based on this track (pass station object instead of ID)
-    await radioStationService.updateStationFromTracks(tempStation, [track]);
+    await radioStationService.updateStationFromTracks(tempStation, [track], {
+      album: 0.5,
+    });
 
     // Set as selected station
     this.selectedStation = tempStation;

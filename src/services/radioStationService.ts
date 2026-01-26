@@ -1,5 +1,5 @@
 import { MusicCacheService, AudioTrack } from './musicCacheService';
-import { RadioStation, RadioStationCriteria, TrackScore } from '../types/radioStation';
+import { RadioStation, RadioStationCriteria, TrackScore, RadioStationAttribute } from '../types/radioStation';
 
 export class RadioStationService {
   private musicCache: MusicCacheService;
@@ -132,7 +132,7 @@ export class RadioStationService {
    */
   public async selectNextTrackForStation(
     station: RadioStation,
-    recent: AudioTrack[]
+    playbackHistory: AudioTrack[]
   ): Promise<TrackScore | null> {
     // Get all tracks from the music library
     const allTracks = await this.musicCache.getAllCachedEntries();
@@ -140,6 +140,8 @@ export class RadioStationService {
     if (allTracks.length === 0) {
       return null;
     }
+
+    let recent = [...playbackHistory].reverse().slice(0, 20);
 
     // Calculate scores for each track
     const scoredTracks: TrackScore[] = [];
@@ -328,10 +330,27 @@ export class RadioStationService {
      */
     public async updateStationFromTracks(
       station: RadioStation,
-      tracks: AudioTrack[]
+      tracks: AudioTrack[],
+      weightAdjustments?: Partial<Record<RadioStationAttribute, number>>
     ): Promise<void> {
       // Calculate average criteria from the tracks
       const averagedCriteria = this.calculateAverageCriteria(tracks, station.criteria);
+
+      // Apply weight adjustments if provided
+      if (weightAdjustments && Object.keys(weightAdjustments).length > 0) {
+        for (const [attribute, adjustment] of Object.entries(weightAdjustments)) {
+          const attr = attribute as RadioStationAttribute;
+          const criteriaIndex = averagedCriteria.findIndex(c => c.attribute === attr);
+          
+          if (criteriaIndex >= 0 && adjustment !== undefined) {
+            // Apply the adjustment multiplier to the weight
+            const criterion = averagedCriteria[criteriaIndex];
+            if (criterion) {
+              criterion.weight *= adjustment;
+            }
+          }
+        }
+      }
 
       station.updatedAt = new Date();
       station.criteria = averagedCriteria;
