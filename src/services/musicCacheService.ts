@@ -293,10 +293,11 @@ export class MusicCacheService {
         // Group entries by artist name
         for (const entry of allEntries) {
           if (entry.artist.toLowerCase().includes(artistName.toLowerCase())) {
-            if (!artistMap.has(entry.artist)) {
-              artistMap.set(entry.artist, []);
+            const key = entry.artist.toLowerCase();
+            if (!artistMap.has(key)) {
+              artistMap.set(key, []);
             }
-            artistMap.get(entry.artist)!.push(entry);
+            artistMap.get(key)!.push(entry);
           }
         }
         resolve(artistMap);
@@ -308,7 +309,7 @@ export class MusicCacheService {
     });
   }
 
-  async getAlbumsByName(albumName: string): Promise<MusicLibraryEntry[]> {
+  async getAlbumsByName(albumName: string): Promise<Map<string, MusicLibraryEntry[]>> {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
@@ -320,10 +321,19 @@ export class MusicCacheService {
 
       request.onsuccess = () => {
         const allEntries: MusicLibraryEntry[] = request.result || [];
-        const filtered = allEntries.filter(entry =>
-          entry.album.toLowerCase().includes(albumName.toLowerCase())
-        );
-        resolve(filtered);
+        const albumMap = new Map<string, MusicLibraryEntry[]>();
+
+        // Group entries by album name (lowercase)
+        for (const entry of allEntries) {
+          if (entry.album.toLowerCase().includes(albumName.toLowerCase())) {
+            const key = entry.artist.toLowerCase() + '|' + entry.album.toLowerCase();
+            if (!albumMap.has(key)) {
+              albumMap.set(key, []);
+            }
+            albumMap.get(key)!.push(entry);
+          }
+        }
+        resolve(albumMap);
       };
 
       request.onerror = () => {

@@ -14,36 +14,43 @@ export const performSearch = async (
     // First, check if the search query matches an artist or album (fuzzy match)
     let results: SearchResult[] = [];
 
+    let tracksConsolidated: MusicLibraryEntry[] = []
+
     // Check for artist matches (fuzzy)
     const artistsWithName = await cacheService.getArtistsByName(searchQuery);
-    console.log(artistsWithName);
     if (artistsWithName) {
       for (const artist of artistsWithName.keys()) {
+        const tracklist = artistsWithName.get(artist)!;
+        tracksConsolidated.push(...tracklist);
         results.push({
           type: 'artist',
-          artistName: artist,
-          trackCount: artistsWithName.get(artist)!.length,
-          tracks: artistsWithName.get(artist) ?? []
+          artistName: tracklist[0]!.artist,
+          trackCount: tracklist.length,
+          tracks: tracklist
         });
       }
     }
 
     // Check for album matches (fuzzy)
-    const albumsWithName = (await cacheService.getAlbumsByName(searchQuery))
-      .filter(a => !artistsWithName.get(a.artist));
-    if (albumsWithName && albumsWithName.length > 0) {
+    const albumsWithName = (await cacheService.getAlbumsByName(searchQuery));
+    for(let key of albumsWithName.keys()){
+      const tracklist = albumsWithName.get(key)!;
+      const first = tracklist[0]!;
+      tracksConsolidated.push(...tracklist);
       // Get album art from the first track in the album
-      let albumArtUrl = await cacheService.getAlbumArtUrl(albumsWithName[0]!);
+      let albumArtUrl = await cacheService.getAlbumArtUrl(first);
 
       results.push({
         type: 'album',
-        albumName: albumsWithName[0]?.album || '',
-        artistName: albumsWithName[0]?.artist || '',
-        trackCount: albumsWithName.length,
-        tracks: albumsWithName,
+        albumName: first.album || '',
+        artistName: first.artist || '',
+        trackCount: tracklist.length,
+        tracks: tracklist,
         albumArt: albumArtUrl
       });
     }
+
+    console.log(tracksConsolidated);
 
     // If no exact matches, do fuzzy search for tracks
     const trackResults = allEntries.filter((entry: MusicLibraryEntry) =>
@@ -51,8 +58,7 @@ export const performSearch = async (
       entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.album.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .filter(r => !artistsWithName.get(r.artist))
-    .filter(r => !albumsWithName.find(a => a.album === r.album));
+    .filter(r => !tracksConsolidated.find(t => t.id === r.id));
     for(let track of trackResults){
       results.push({
         ...track,
