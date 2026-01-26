@@ -1,4 +1,4 @@
-import { AudioTrack } from './musicCacheService';
+import { AudioTrack, MusicCacheService, MusicLibraryEntry } from './musicCacheService';
 import { loadAudioFileFromTrack } from '../utils/fileHelpers';
 import { RadioStation, RadioStationCriteria } from '../types/radioStation';
 import { radioStationService } from './radioStationService';
@@ -45,20 +45,20 @@ export class PlaybackService {
     }
   }
 
-   private notifyStateChange(): void {
-     if (this.onPlaybackStateChange && this.audioElement) {
-       const state: PlaybackState = {
-         isPlaying: !this.audioElement.paused,
-         currentTrack: this.currentTrack,
-         progress: this.audioElement.currentTime,
-         duration: this.audioElement.duration || 0,
-         playbackHistory: [...this.playbackHistory],
-         selectedStation: this.selectedStation,
-         nextTrack: this.nextTrack
-       };
-       this.onPlaybackStateChange(state);
-     }
-   }
+  private notifyStateChange(): void {
+    if (this.onPlaybackStateChange && this.audioElement) {
+      const state: PlaybackState = {
+        isPlaying: !this.audioElement.paused,
+        currentTrack: this.currentTrack,
+        progress: this.audioElement.currentTime,
+        duration: this.audioElement.duration || 0,
+        playbackHistory: [...this.playbackHistory],
+        selectedStation: this.selectedStation,
+        nextTrack: this.nextTrack
+      };
+      this.onPlaybackStateChange(state);
+    }
+  }
 
   /**
    * Play a track
@@ -72,6 +72,32 @@ export class PlaybackService {
 
       // Create temporary radio station based on the selected track
       await this.createTemporaryStationFromTrack(track);
+    } catch (error) {
+      console.error('Playback error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Play a track
+   * @param track The AudioTrack to play
+   */
+  public async playStation(station: RadioStation, leadTrack?: MusicLibraryEntry): Promise<void> {
+    try {
+
+      // Set as selected station
+      let track: AudioTrack;
+      if(!leadTrack){
+        track = (await radioStationService.selectNextTrackForStation(station, this.playbackHistory))?.track;
+      } else {
+        track = await MusicCacheService.getInstance().getTrackFromLibraryEntry(leadTrack);
+      }
+      if(!track) return;
+
+      this.selectedStation = station;
+      this.notifyStateChange();
+
+      this.play(track);
     } catch (error) {
       console.error('Playback error:', error);
       throw error;
@@ -213,7 +239,7 @@ export class PlaybackService {
           station,
           this.playbackHistory
         );
-        
+
         if (nextTrackScore && nextTrackScore.track) {
           this.nextTrack = nextTrackScore.track;
           await this.play(nextTrackScore.track);

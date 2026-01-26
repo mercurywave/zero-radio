@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import SearchView, { performSearch } from './SearchView';
-import { AudioTrack, MusicCacheService, SearchResult } from '../services/musicCacheService';
+import { AudioTrack, MusicCacheService, MusicLibraryEntry, SearchResult } from '../services/musicCacheService';
+import { RadioStation } from '../types/radioStation';
 
 const cacheService = MusicCacheService.getInstance();
 
 interface RadioStationViewProps {
   onPlayTrack?: (track: AudioTrack) => void;
+  onPlayStation?: (station: RadioStation, leadTrack?: MusicLibraryEntry) => void;
 }
 
-const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack }) => {
+const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlayStation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -77,15 +79,16 @@ const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack }) => {
         searchResults={searchResults}
         isSearching={isSearching}
         onPlayTrack={onPlayTrack}
+        onPlayStation={onPlayStation}
       />
       
-      {searchQuery.trim() === '' && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} />}
+      {searchQuery.trim() === '' && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
     </div>
   )
 }
 
 // Render radio station tiles when no search query
-const RenderStationTiles = ({ suggestedStations, recentStations }: { suggestedStations: any[], recentStations: any[] }) => {
+const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation }: { suggestedStations: any[], recentStations: any[], onPlayStation?: ((station: RadioStation, leadTrack?: MusicLibraryEntry) => void) | undefined }) => {
   return (
     <>
       {/* Suggested Stations */}
@@ -101,6 +104,15 @@ const RenderStationTiles = ({ suggestedStations, recentStations }: { suggestedSt
             <div className="station-info">
               <h4>{station.name}</h4>
             </div>
+            {onPlayStation && (
+              <button
+                className="play-btn"
+                onClick={() => onPlayStation(station)}
+                title="Play station"
+              >
+                ▶
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -118,6 +130,15 @@ const RenderStationTiles = ({ suggestedStations, recentStations }: { suggestedSt
             <div className="station-info">
               <h4>{station.name}</h4>
             </div>
+            {onPlayStation && (
+              <button
+                className="play-btn"
+                onClick={() => onPlayStation(station.id)}
+                title="Play station"
+              >
+                ▶
+              </button>
+            )}
           </div>
         ))}
       </div>

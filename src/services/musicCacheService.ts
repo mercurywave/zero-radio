@@ -233,6 +233,14 @@ export class MusicCacheService {
     });
   }
 
+  public async getTrackFromLibraryEntry(track: MusicLibraryEntry): Promise<AudioTrack>{
+    let albumArtUrl = await this.getAlbumArtUrl(track);
+    return {
+      ...track,
+      albumArt: albumArtUrl
+    }
+  }
+
   async getAlbumArtUrl(track: MusicLibraryEntry): Promise<string | null> {
     let albumArtUrl: string | null = null;
     try {

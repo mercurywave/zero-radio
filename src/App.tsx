@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { AudioTrack, MusicCacheService } from './services/musicCacheService'
+import { AudioTrack, MusicCacheService, MusicLibraryEntry } from './services/musicCacheService'
 import ProgressPopover from './components/ProgressPopover'
 import FolderSelectView from './components/FolderSelectView'
 import RadioStationView from './components/RadioStationView'
@@ -8,6 +8,7 @@ import './index.css'
 import './components/ProgressPopover.css'
 import { tryUseCachedFolder } from './utils/fileHelpers'
 import { playbackService, PlaybackState } from './services/playbackService'
+import { RadioStation } from './types/radioStation'
 
 const cacheService = MusicCacheService.getInstance();
 
@@ -55,6 +56,10 @@ const App: React.FC = () => {
     }
   };
 
+  const handlePlayStation = async (station: RadioStation, leadTrack?: MusicLibraryEntry) => {
+    playbackService.playStation(station, leadTrack);
+  }
+
   // Check for saved folder on initial load
   useEffect(() => {
     tryUseCachedFolder().then(folder => {
@@ -97,7 +102,7 @@ const App: React.FC = () => {
         />
       ) : (
         <>
-          <RadioStationView onPlayTrack={handlePlayTrack} />
+          <RadioStationView onPlayTrack={handlePlayTrack} onPlayStation={handlePlayStation} />
           <PlaybackControls
             currentTrack={currentTrack}
             isPlaying={playbackState.isPlaying}

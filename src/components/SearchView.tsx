@@ -1,5 +1,7 @@
 import React from 'react';
 import { MusicCacheService, MusicLibraryEntry, AudioTrack, SearchResult, TrackSearchResult, ArtistSearchResult, AlbumSearchResult, AlbumArtEntry } from '../services/musicCacheService';
+import { radioStationService } from '../services/radioStationService';
+import { RadioStation } from '../types/radioStation';
 
 export const performSearch = async (
   cacheService: MusicCacheService,
@@ -33,7 +35,7 @@ export const performSearch = async (
 
     // Check for album matches (fuzzy)
     const albumsWithName = (await cacheService.getAlbumsByName(searchQuery));
-    for(let key of albumsWithName.keys()){
+    for (let key of albumsWithName.keys()) {
       const tracklist = albumsWithName.get(key)!;
       const first = tracklist[0]!;
       tracksConsolidated.push(...tracklist);
@@ -50,16 +52,14 @@ export const performSearch = async (
       });
     }
 
-    console.log(tracksConsolidated);
-
     // If no exact matches, do fuzzy search for tracks
     const trackResults = allEntries.filter((entry: MusicLibraryEntry) =>
       entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.album.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .filter(r => !tracksConsolidated.find(t => t.id === r.id));
-    for(let track of trackResults){
+      .filter(r => !tracksConsolidated.find(t => t.id === r.id));
+    for (let track of trackResults) {
       results.push({
         ...track,
         type: 'track',
@@ -83,6 +83,7 @@ interface SearchViewProps {
   searchResults: SearchResult[];
   isSearching: boolean;
   onPlayTrack?: ((track: AudioTrack) => void) | undefined;
+  onPlayStation?: ((station: RadioStation, leadTrack: MusicLibraryEntry) => void) | undefined;
 }
 
 const SearchView: React.FC<SearchViewProps> = ({
@@ -90,7 +91,8 @@ const SearchView: React.FC<SearchViewProps> = ({
   searchQuery,
   searchResults,
   isSearching,
-  onPlayTrack
+  onPlayTrack,
+  onPlayStation
 }) => {
   return (
     <div className="search-wrapper">
@@ -155,6 +157,21 @@ const SearchView: React.FC<SearchViewProps> = ({
                         <h4>{result.artistName}</h4>
                         <p className="station-genre">{result.trackCount} tracks</p>
                       </div>
+                      {onPlayStation && (
+                        <button
+                          className="play-btn"
+                          onClick={async () => {
+                            let station = await radioStationService
+                              .createArtistStation(result.artistName, result.tracks);
+                            const randomIndex = Math.floor(Math.random() * result.tracks.length);
+                            let track = result.tracks[randomIndex]!;
+                            onPlayStation(station, track);
+                          }}
+                          title="Play track"
+                        >
+                          ▶
+                        </button>
+                      )}
                     </div>
                   );
 
@@ -173,6 +190,21 @@ const SearchView: React.FC<SearchViewProps> = ({
                         <p className="station-genre">{result.artistName}</p>
                         <p className="station-listeners">{result.trackCount} tracks</p>
                       </div>
+                      {onPlayStation && (
+                        <button
+                          className="play-btn"
+                          onClick={async () => {
+                            let station = await radioStationService
+                              .createAlbumStation(result.artistName, result.albumName, result.tracks);
+                            const randomIndex = Math.floor(Math.random() * result.tracks.length);
+                            let track = result.tracks[randomIndex]!;
+                            onPlayStation(station, track);
+                          }}
+                          title="Play track"
+                        >
+                          ▶
+                        </button>
+                      )}
                     </div>
                   );
               }
