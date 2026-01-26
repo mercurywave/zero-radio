@@ -17,30 +17,30 @@ export interface MusicLibraryEntry {
 }
 
 export interface AudioTrack extends MusicLibraryEntry {
-   albumArt: string | null;
+  albumArt: string | null;
 }
 
 export type SearchResultType = 'track' | 'artist' | 'album';
 
 export interface TrackSearchResult extends MusicLibraryEntry {
-   type: 'track';
-   albumArt: string | null;
+  type: 'track';
+  albumArt: string | null;
 }
 
 export interface ArtistSearchResult {
-   type: 'artist';
-   artistName: string;
-   trackCount: number;
-   tracks: MusicLibraryEntry[];
+  type: 'artist';
+  artistName: string;
+  trackCount: number;
+  tracks: MusicLibraryEntry[];
 }
 
 export interface AlbumSearchResult {
-   type: 'album';
-   albumName: string;
-   artistName: string;
-   trackCount: number;
-   tracks: MusicLibraryEntry[];
-   albumArt: string | null;
+  type: 'album';
+  albumName: string;
+  artistName: string;
+  trackCount: number;
+  tracks: MusicLibraryEntry[];
+  albumArt: string | null;
 }
 
 export type SearchResult = TrackSearchResult | ArtistSearchResult | AlbumSearchResult;
@@ -110,7 +110,7 @@ export class MusicCacheService {
       };
     });
   }
-  
+
   async updateCache(directoryHandle: FileSystemDirectoryHandle): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized');
@@ -122,7 +122,7 @@ export class MusicCacheService {
 
       // Scan for all audio files in the directory
       const audioFiles = await scanDirectoryForAudioFiles(directoryHandle);
-      
+
       // Update progress - start at 0%
       if (this.onProgressCallback) {
         this.onProgressCallback(0, 0, audioFiles.length);
@@ -151,7 +151,7 @@ export class MusicCacheService {
       // Find new files and extract metadata
       const newFiles = audioFiles.filter(file => !cachedFiles.some(entry => entry.filePath === file.name));
       const newEntries: MusicLibraryEntry[] = [];
-      
+
       // Update progress - start at 0%
       if (this.onProgressCallback) {
         this.onProgressCallback(0, 0, newFiles.length);
@@ -176,10 +176,10 @@ export class MusicCacheService {
               duration: metadata.duration || 0
             };
             newEntries.push(entry);
-            
+
             // Store the music entry first
             await this.storeEntries([entry]);
-            
+
             // Extract and store album art if available
             const albumArt = await extractAlbumArt(file);
             if (albumArt && albumArt.data) {
@@ -190,7 +190,7 @@ export class MusicCacheService {
                 filePath: file.name
               });
             }
-            
+
             // Update progress - increment by 1/total files percentage
             if (this.onProgressCallback) {
               this.onProgressCallback(((i + 1) / newFiles.length) * 100, i + 1, newFiles.length);
@@ -233,148 +233,179 @@ export class MusicCacheService {
     });
   }
 
-   async getAlbumArtById(id: string): Promise<AlbumArtEntry | null> {
-     if (!this.db) {
-       throw new Error('Database not initialized');
-     }
+  async getAlbumArtUrl(track: MusicLibraryEntry): Promise<string | null> {
+    let albumArtUrl: string | null = null;
+    try {
+      const firstTrackArt = await this.getAlbumArtById(track.id || '');
+      if (firstTrackArt && firstTrackArt.data) {
+        if (firstTrackArt.data instanceof Blob) {
+          albumArtUrl = URL.createObjectURL(firstTrackArt.data);
+        } else if (firstTrackArt.data instanceof Uint8Array) {
+          const blob = new Blob([firstTrackArt.data], { type: firstTrackArt.mimeType });
+          albumArtUrl = URL.createObjectURL(blob);
+        } else if (firstTrackArt.data instanceof ArrayBuffer) {
+          const blob = new Blob([firstTrackArt.data], { type: firstTrackArt.mimeType });
+          albumArtUrl = URL.createObjectURL(blob);
+        } else if (typeof firstTrackArt.data === 'string') {
+          albumArtUrl = firstTrackArt.data;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching album art for album result:', error);
+    }
+    return albumArtUrl;
+  }
 
-     return new Promise((resolve, reject) => {
-       const transaction = this.db!.transaction([ALBUM_ART_STORE], 'readonly');
-       const store = transaction.objectStore(ALBUM_ART_STORE);
-       const request = store.get(id);
+  async getAlbumArtById(id: string): Promise<AlbumArtEntry | null> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
 
-       request.onsuccess = () => {
-         resolve(request.result || null);
-       };
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([ALBUM_ART_STORE], 'readonly');
+      const store = transaction.objectStore(ALBUM_ART_STORE);
+      const request = store.get(id);
 
-       request.onerror = () => {
-         reject(request.error);
-       };
-     });
-   }
+      request.onsuccess = () => {
+        resolve(request.result || null);
+      };
 
-   async getArtistsByName(artistName: string): Promise<MusicLibraryEntry[]> {
-     if (!this.db) {
-       throw new Error('Database not initialized');
-     }
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  }
 
-     return new Promise((resolve, reject) => {
-       const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
-       const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
-       const request = store.getAll();
+  async getArtistsByName(artistName: string): Promise<Map<string, MusicLibraryEntry[]>> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
 
-       request.onsuccess = () => {
-         const allEntries: MusicLibraryEntry[] = request.result || [];
-         const filtered = allEntries.filter(entry => 
-           entry.artist.toLowerCase().includes(artistName.toLowerCase())
-         );
-         resolve(filtered);
-       };
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
+      const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
+      const request = store.getAll();
 
-       request.onerror = () => {
-         reject(request.error);
-       };
-     });
-   }
+      request.onsuccess = () => {
+        const allEntries: MusicLibraryEntry[] = request.result || [];
+        const artistMap = new Map<string, MusicLibraryEntry[]>();
 
-   async getAlbumsByName(albumName: string): Promise<MusicLibraryEntry[]> {
-     if (!this.db) {
-       throw new Error('Database not initialized');
-     }
+        // Group entries by artist name
+        for (const entry of allEntries) {
+          if (entry.artist.toLowerCase().includes(artistName.toLowerCase())) {
+            if (!artistMap.has(entry.artist)) {
+              artistMap.set(entry.artist, []);
+            }
+            artistMap.get(entry.artist)!.push(entry);
+          }
+        }
+        resolve(artistMap);
+      };
 
-     return new Promise((resolve, reject) => {
-       const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
-       const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
-       const request = store.getAll();
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  }
 
-       request.onsuccess = () => {
-         const allEntries: MusicLibraryEntry[] = request.result || [];
-         const filtered = allEntries.filter(entry => 
-           entry.album.toLowerCase().includes(albumName.toLowerCase())
-         );
-         resolve(filtered);
-       };
+  async getAlbumsByName(albumName: string): Promise<MusicLibraryEntry[]> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
 
-       request.onerror = () => {
-         reject(request.error);
-       };
-     });
-   }
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
+      const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
+      const request = store.getAll();
 
-   async getAllArtists(): Promise<{artist: string, count: number}[]> {
-     if (!this.db) {
-       throw new Error('Database not initialized');
-     }
+      request.onsuccess = () => {
+        const allEntries: MusicLibraryEntry[] = request.result || [];
+        const filtered = allEntries.filter(entry =>
+          entry.album.toLowerCase().includes(albumName.toLowerCase())
+        );
+        resolve(filtered);
+      };
 
-     return new Promise((resolve, reject) => {
-       const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
-       const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
-       const request = store.getAll();
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  }
 
-       request.onsuccess = () => {
-         const allEntries: MusicLibraryEntry[] = request.result || [];
-         const artistMap = new Map<string, number>();
-         
-         allEntries.forEach(entry => {
-           const artist = entry.artist.toLowerCase();
-           artistMap.set(artist, (artistMap.get(artist) || 0) + 1);
-         });
-         
-         const artists = Array.from(artistMap.entries()).map(([artist, count]) => ({
-           artist,
-           count
-         }));
-         
-         resolve(artists);
-       };
+  async getAllArtists(): Promise<{ artist: string, count: number }[]> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
 
-       request.onerror = () => {
-         reject(request.error);
-       };
-     });
-   }
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
+      const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
+      const request = store.getAll();
 
-   async getAllAlbums(): Promise<{album: string, artist: string, count: number}[]> {
-     if (!this.db) {
-       throw new Error('Database not initialized');
-     }
+      request.onsuccess = () => {
+        const allEntries: MusicLibraryEntry[] = request.result || [];
+        const artistMap = new Map<string, number>();
 
-     return new Promise((resolve, reject) => {
-       const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
-       const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
-       const request = store.getAll();
+        allEntries.forEach(entry => {
+          const artist = entry.artist.toLowerCase();
+          artistMap.set(artist, (artistMap.get(artist) || 0) + 1);
+        });
 
-       request.onsuccess = () => {
-         const allEntries: MusicLibraryEntry[] = request.result || [];
-         const albumMap = new Map<string, {artist: string}[]>();
-         
-         allEntries.forEach(entry => {
-           const albumKey = `${entry.album.toLowerCase()}-${entry.artist.toLowerCase()}`;
-           if (!albumMap.has(albumKey)) {
-             albumMap.set(albumKey, []);
-           }
-           albumMap.get(albumKey)!.push({
-             artist: entry.artist
-           });
-         });
-         
-          const albums = Array.from(albumMap.entries()).map(([key, entries]) => {
-            const albumParts = key.split('-');
-            return {
-              album: (albumParts[0] ?? '') as string,
-              artist: entries[0]?.artist || '',
-              count: entries.length
-            };
-          }) as {album: string, artist: string, count: number}[];
-         
-         resolve(albums);
-       };
+        const artists = Array.from(artistMap.entries()).map(([artist, count]) => ({
+          artist,
+          count
+        }));
 
-       request.onerror = () => {
-         reject(request.error);
-       };
-     });
-   }
+        resolve(artists);
+      };
+
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  }
+
+  async getAllAlbums(): Promise<{ album: string, artist: string, count: number }[]> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([MUSIC_LIBRARY_STORE], 'readonly');
+      const store = transaction.objectStore(MUSIC_LIBRARY_STORE);
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const allEntries: MusicLibraryEntry[] = request.result || [];
+        const albumMap = new Map<string, { artist: string }[]>();
+
+        allEntries.forEach(entry => {
+          const albumKey = `${entry.album.toLowerCase()}-${entry.artist.toLowerCase()}`;
+          if (!albumMap.has(albumKey)) {
+            albumMap.set(albumKey, []);
+          }
+          albumMap.get(albumKey)!.push({
+            artist: entry.artist
+          });
+        });
+
+        const albums = Array.from(albumMap.entries()).map(([key, entries]) => {
+          const albumParts = key.split('-');
+          return {
+            album: (albumParts[0] ?? '') as string,
+            artist: entries[0]?.artist || '',
+            count: entries.length
+          };
+        }) as { album: string, artist: string, count: number }[];
+
+        resolve(albums);
+      };
+
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  }
 
   private async storeEntries(entries: MusicLibraryEntry[]): Promise<void> {
     if (!this.db) {

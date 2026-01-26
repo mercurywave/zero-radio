@@ -1,5 +1,5 @@
 import React from 'react';
-import { MusicCacheService, MusicLibraryEntry, AudioTrack, SearchResult, TrackSearchResult, ArtistSearchResult, AlbumSearchResult } from '../services/musicCacheService';
+import { MusicCacheService, MusicLibraryEntry, AudioTrack, SearchResult, TrackSearchResult, ArtistSearchResult, AlbumSearchResult, AlbumArtEntry } from '../services/musicCacheService';
 
 export const performSearch = async (
   cacheService: MusicCacheService,
@@ -16,42 +16,28 @@ export const performSearch = async (
 
     // Check for artist matches (fuzzy)
     const artistsWithName = await cacheService.getArtistsByName(searchQuery);
-    if (artistsWithName && artistsWithName.length > 0) {
-      results.push({
-        type: 'artist',
-        artistName: searchQuery,
-        trackCount: artistsWithName.length,
-        tracks: artistsWithName
-      });
+    console.log(artistsWithName);
+    if (artistsWithName) {
+      for (const artist of artistsWithName.keys()) {
+        results.push({
+          type: 'artist',
+          artistName: artist,
+          trackCount: artistsWithName.get(artist)!.length,
+          tracks: artistsWithName.get(artist) ?? []
+        });
+      }
     }
 
     // Check for album matches (fuzzy)
-    const albumsWithName = await cacheService.getAlbumsByName(searchQuery);
+    const albumsWithName = (await cacheService.getAlbumsByName(searchQuery))
+      .filter(a => !artistsWithName.get(a.artist));
     if (albumsWithName && albumsWithName.length > 0) {
       // Get album art from the first track in the album
-      let albumArtUrl: string | null = null;
-      try {
-        const firstTrackArt = await cacheService.getAlbumArtById(albumsWithName[0]?.id || '');
-        if (firstTrackArt && firstTrackArt.data) {
-          if (firstTrackArt.data instanceof Blob) {
-            albumArtUrl = URL.createObjectURL(firstTrackArt.data);
-          } else if (firstTrackArt.data instanceof Uint8Array) {
-            const blob = new Blob([firstTrackArt.data], { type: firstTrackArt.mimeType });
-            albumArtUrl = URL.createObjectURL(blob);
-          } else if (firstTrackArt.data instanceof ArrayBuffer) {
-            const blob = new Blob([firstTrackArt.data], { type: firstTrackArt.mimeType });
-            albumArtUrl = URL.createObjectURL(blob);
-          } else if (typeof firstTrackArt.data === 'string') {
-            albumArtUrl = firstTrackArt.data;
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching album art for album result:', error);
-      }
+      let albumArtUrl = await cacheService.getAlbumArtUrl(albumsWithName[0]!);
 
       results.push({
         type: 'album',
-        albumName: searchQuery,
+        albumName: albumsWithName[0]?.album || '',
         artistName: albumsWithName[0]?.artist || '',
         trackCount: albumsWithName.length,
         tracks: albumsWithName,
@@ -60,54 +46,20 @@ export const performSearch = async (
     }
 
     // If no exact matches, do fuzzy search for tracks
-    const fuzzyResults = allEntries.filter((entry: MusicLibraryEntry) =>
+    const trackResults = allEntries.filter((entry: MusicLibraryEntry) =>
       entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.album.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    // Fetch album art for each result
-    const resultsWithArt: TrackSearchResult[] = await Promise.all(
-      fuzzyResults.map(async (entry: MusicLibraryEntry): Promise<TrackSearchResult> => {
-        try {
-          const albumArt = await cacheService.getAlbumArtById(entry.id);
-          let albumArtUrl: string | null = null;
-
-          if (albumArt && albumArt.data) {
-            // Handle different data types that might be returned
-            if (albumArt.data instanceof Blob) {
-              albumArtUrl = URL.createObjectURL(albumArt.data);
-            } else if (albumArt.data instanceof Uint8Array) {
-              // Convert Uint8Array to Blob for URL creation
-              const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
-              albumArtUrl = URL.createObjectURL(blob);
-            } else if (albumArt.data instanceof ArrayBuffer) {
-              // Convert ArrayBuffer to Blob for URL creation
-              const blob = new Blob([albumArt.data], { type: albumArt.mimeType });
-              albumArtUrl = URL.createObjectURL(blob);
-            } else if (typeof albumArt.data === 'string') {
-              // If it's already a data URL, use it directly
-              albumArtUrl = albumArt.data;
-            }
-          }
-
-          return {
-            ...entry,
-            type: 'track',
-            albumArt: albumArtUrl
-          };
-        } catch (error) {
-          console.error('Error fetching album art:', error);
-          return {
-            ...entry,
-            type: 'track',
-            albumArt: null
-          };
-        }
-      })
-    );
-
-    results = resultsWithArt;
+    )
+    .filter(r => !artistsWithName.get(r.artist))
+    .filter(r => !albumsWithName.find(a => a.album === r.album));
+    for(let track of trackResults){
+      results.push({
+        ...track,
+        type: 'track',
+        albumArt: await cacheService.getAlbumArtUrl(track),
+      });
+    }
 
     setSearchResults(results);
     setIsSearching(false);
