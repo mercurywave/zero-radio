@@ -69,7 +69,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const handlePlaybackStateChange = (state: PlaybackState) => {
       setPlaybackState(state);
-      
+
       if (state.currentTrack) {
         setCurrentTrack(state.currentTrack);
         setCurrentArtist(state.currentTrack.artist || '');
@@ -98,17 +98,17 @@ const App: React.FC = () => {
       ) : (
         <>
           <RadioStationView onPlayTrack={handlePlayTrack} />
-           <PlaybackControls
-             currentTrack={currentTrack}
-             isPlaying={playbackState.isPlaying}
-             progress={playbackState.progress}
-             duration={playbackState.duration}
-             onPlayPause={async () => {
-               await playbackService.togglePlayPause();
-             }}
-             onPrevious={() => { }}
-             onNext={() => { }}
-           />
+          <PlaybackControls
+            currentTrack={currentTrack}
+            isPlaying={playbackState.isPlaying}
+            progress={playbackState.progress}
+            duration={playbackState.duration}
+            onPlayPause={async () => {
+              await playbackService.togglePlayPause();
+            }}
+            onPrevious={() => { }}
+            onNext={() => playbackService.playNextTrack()}
+          />
         </>
       )}
       <ProgressPopover
