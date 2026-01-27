@@ -1,5 +1,6 @@
 import React from 'react';
 import { AudioTrack } from '../services/musicCacheService';
+import './PlaybackControls.css';
 
 type PlaybackControlsProps = {
   currentTrack: AudioTrack | null;
