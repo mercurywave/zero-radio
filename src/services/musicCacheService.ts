@@ -1,5 +1,6 @@
 import { extractMetadata, extractAlbumArt } from './metadataService';
 import { scanDirectoryForAudioFiles } from './fileSystemService';
+import { RadioStationAttribute } from '../types/radioStation';
 
 // Define types for our music library entries
 export interface MusicLibraryEntry {
@@ -209,6 +210,10 @@ export class MusicCacheService {
       // Add new entries to the database
       if (newEntries.length > 0) {
         console.log(`Added ${newEntries.length} new entries`);
+      }
+      
+      if (deletedEntries.length > 0 || newFiles.length > 0) {
+        await this.scanForRadioStations();
       }
 
       console.log('Cache update completed');
@@ -505,6 +510,172 @@ export class MusicCacheService {
       hash = hash & hash; // Convert to 32bit integer
     }
     return hash.toString();
+  }
+
+  /**
+   * Scan for potential radio stations based on track metadata
+   * Groups tracks by common attributes and creates stations with >20 tracks
+   */
+  private async scanForRadioStations(): Promise<void> {
+    const allTracks = await this.getAllCachedEntries();
+    if (allTracks.length < 20) {
+      console.log('Not enough tracks to create radio stations');
+      return;
+    }
+
+    // Group tracks by each attribute
+    type GroupingAttribute = 'genre' | 'mood' | 'decade' | 'genre+decade';
+    const groupsByAttribute: Record<GroupingAttribute, Map<string, MusicLibraryEntry[]>> = {
+      genre: new Map(),
+      mood: new Map(),
+      decade: new Map(),
+      'genre+decade': new Map()
+    };
+
+    // Populate groups
+    for (const track of allTracks) {
+
+      // Group by genre (comma-separated)
+      const genres = track.genre.split(',').map(g => g.trim()).filter(g => g.length > 0);
+      for (const genre of genres) {
+        const genreKey = genre.toLowerCase();
+        if (!groupsByAttribute.genre.has(genreKey)) {
+          groupsByAttribute.genre.set(genreKey, []);
+        }
+        groupsByAttribute.genre.get(genreKey)!.push(track);
+      }
+
+      // Group by mood
+      const moodKey = track.mood.toLowerCase();
+      if (moodKey && !groupsByAttribute.mood.has(moodKey)) {
+        groupsByAttribute.mood.set(moodKey, []);
+      }
+      if (moodKey) {
+        groupsByAttribute.mood.get(moodKey)!.push(track);
+      }
+
+      // Group by decade
+      const decade = track.year > 0 ? Math.floor(track.year / 10) * 10 : 0;
+      const decadeKey = decade.toString();
+      if (!groupsByAttribute.decade.has(decadeKey)) {
+        groupsByAttribute.decade.set(decadeKey, []);
+      }
+      groupsByAttribute.decade.get(decadeKey)!.push(track);
+
+      // Group by genre+decade (hybrid grouping)
+      for (const genre of genres) {
+        const hybridKey = `${genre.toLowerCase()}|${decadeKey}`;
+        if (!groupsByAttribute['genre+decade'].has(hybridKey)) {
+          groupsByAttribute['genre+decade'].set(hybridKey, []);
+        }
+        groupsByAttribute['genre+decade'].get(hybridKey)!.push(track);
+      }
+    }
+
+    // Find groups with more than 20 tracks and create radio stations
+    const createdStations: string[] = [];
+
+    for (const [attribute, groups] of Object.entries(groupsByAttribute)) {
+      for (const [groupKey, tracks] of groups) {
+        if (tracks.length > 20) {
+          // Create criteria based on the grouping attribute
+          const criteria = this.createCriteriaFromGroup(attribute as 'artist' | 'album' | 'genre' | 'mood' | 'decade' | 'genre+decade', groupKey);
+          
+          // Create station name
+          let stationName = '';
+          switch (attribute) {
+            case 'album':
+              const [artist, album] = groupKey.split('|');
+              stationName = `${artist} - ${album}`;
+              break;
+            case 'genre':
+              stationName = `Genre: ${groupKey}`;
+              break;
+            case 'mood':
+              stationName = `Mood: ${groupKey}`;
+              break;
+            case 'decade':
+              stationName = `Decade: ${groupKey}'s`;
+              break;
+            case 'genre+decade':
+              const [genre, decade] = groupKey.split('|');
+              stationName = `${genre} (${decade}'s)`;
+              break;
+          }
+
+          // Create the radio station
+          try {
+            await this.createRadioStationFromTracks(stationName, criteria);
+            createdStations.push(`${stationName} (${tracks.length} tracks)`);
+          } catch (error) {
+            console.error(`Error creating radio station for ${groupKey}:`, error);
+          }
+        }
+      }
+    }
+
+    if (createdStations.length > 0) {
+      console.log(`Created ${createdStations.length} new radio stations:`, createdStations.join(', '));
+    } else {
+      console.log('No groups with enough tracks to create radio stations');
+    }
+  }
+
+  /**
+   * Create criteria array from a group key
+   */
+  private createCriteriaFromGroup(attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade' | 'genre+decade', groupKey: string): { attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade'; value: string; weight: number }[] {
+    const criteria: { attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade'; value: string; weight: number }[] = [];
+    
+    switch (attribute) {
+      case 'artist':
+        criteria.push({ attribute: 'artist', value: groupKey, weight: 1.0 });
+        break;
+      case 'album':
+        const [artist, album] = groupKey.split('|');
+        if (artist && album) {
+          criteria.push({ attribute: 'artist', value: artist, weight: 0.7 });
+          criteria.push({ attribute: 'album', value: album, weight: 1.0 });
+        }
+        break;
+      case 'genre':
+        criteria.push({ attribute: 'genre', value: groupKey, weight: 1.0 });
+        break;
+      case 'mood':
+        criteria.push({ attribute: 'mood', value: groupKey, weight: 1.0 });
+        break;
+      case 'decade':
+        criteria.push({ attribute: 'decade', value: groupKey, weight: 1.0 });
+        break;
+      case 'genre+decade':
+        const [genre, decade] = groupKey.split('|');
+        if (genre && decade) {
+          criteria.push({ attribute: 'genre', value: genre, weight: 0.7 });
+          criteria.push({ attribute: 'decade', value: decade, weight: 0.7 });
+        }
+        break;
+    }
+
+    return criteria;
+  }
+
+  /**
+   * Create a radio station from tracks with specific criteria
+   */
+  private async createRadioStationFromTracks(
+    name: string,
+    criteria: { attribute: RadioStationAttribute; value: string; weight: number }[]
+  ): Promise<void> {
+    // Import the RadioStationService here to avoid circular dependency
+    const { radioStationService } = await import('./radioStationService');
+    
+    await radioStationService.createStation({
+      name,
+      description: name,
+      criteria,
+      isAutoGenerated: true,
+      isTemporary: false
+    });
   }
 
   /**

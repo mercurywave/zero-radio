@@ -325,7 +325,7 @@ export class RadioStationService {
   }
 
   /**
-   * Create a temporary radio station based on an artist
+   * Create a temporary radio station based on an tracks
    */
   public async createStationFromTracks(title: string, tracks: MusicLibraryEntry[], weightAdjustments?: Partial<Record<RadioStationAttribute, number>>, isTemporary?: boolean): Promise<RadioStation> {
     const tempStation = await radioStationService.createStation({
