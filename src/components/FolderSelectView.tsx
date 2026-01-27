@@ -1,6 +1,7 @@
 import React from 'react';
 import { set } from 'idb-keyval';
 import { MusicCacheService } from '../services/musicCacheService';
+import './FolderSelectView.css';
 
 interface FolderSelectViewProps {
   onFolderSelected: () => void;
