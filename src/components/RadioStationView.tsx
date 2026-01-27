@@ -19,16 +19,8 @@ const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlay
 
   // State for suggested stations from the service
   const [suggestedStations, setSuggestedStations] = useState<RadioStation[]>([]);
+  const [recentStations, setRecentStations] = useState<RadioStation[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
-
-  const recentStations = [
-    { id: '7', name: 'Indie Mix' },
-    { id: '8', name: 'Classical Moments' },
-    { id: '9', name: 'Country Roads' },
-    { id: '10', name: 'Metal Madness' },
-    { id: '11', name: 'R&B Smooth' },
-    { id: '12', name: 'Reggae Vibes' },
-  ]
 
   // Initialize the cache service and fetch suggested stations when component mounts
   useEffect(() => {
@@ -42,6 +34,15 @@ const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlay
           randomStations = allStations.sort(() => Math.random() - 0.5).slice(0, 5);
         }
         setSuggestedStations(randomStations);
+        // Get stations with lastPlayed, sort by lastPlayed (newest first), and cap to 6
+        const recent = allStations
+          .filter(station => station.lastPlayed)
+          .sort((a, b) => {
+            if (!a.lastPlayed || !b.lastPlayed) return 0;
+            return b.lastPlayed.getTime() - a.lastPlayed.getTime();
+          })
+          .slice(0, 6);
+        setRecentStations(recent);
       } catch (error) {
         console.error('Failed to initialize database:', error);
       }
