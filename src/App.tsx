@@ -65,7 +65,8 @@ const App: React.FC = () => {
     tryUseCachedFolder().then(folder => {
       if (folder) {
         // If we have a saved folder, skip to radio stations view
-        setCurrentView('radioStations')
+        setCurrentView('radioStations');
+        cacheService.loadFromFolder(folder);
       }
     });
   }, [])

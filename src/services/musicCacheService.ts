@@ -74,6 +74,11 @@ export class MusicCacheService {
     return MusicCacheService.instance;
   }
 
+  public async loadFromFolder(directoryHandle: FileSystemDirectoryHandle): Promise<void> {
+    await this.initDB();
+    await this.updateCache(directoryHandle);
+  }
+
   public async initDB(): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);

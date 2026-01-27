@@ -1,5 +1,6 @@
 import React from 'react';
 import { set } from 'idb-keyval';
+import { MusicCacheService } from '../services/musicCacheService';
 
 interface FolderSelectViewProps {
   onFolderSelected: () => void;
@@ -35,18 +36,12 @@ async function doSelectFolder(onFolderSelected: () => void) {
     if(!folder) return;
 
     saveDirectoryHandle(folder);
-
+    
     // Initialize cache with the selected directory
+    const cacheService = MusicCacheService.getInstance();
     console.log('Initializing cache for folder:', folder.name)
-    // Note: cacheService is imported in app.tsx, so we'll keep this here for now
-
-    console.log('Updating cache for folder:', folder.name)
-
-    // This will be handled by the service in app.tsx
-    // await cacheService.updateCache(folder)
-
-    // Clear progress tracking
-    // cacheService.clearOnProgress()
+    
+    await cacheService.loadFromFolder(folder);
 
     // Proceed to radio stations view
     onFolderSelected()
