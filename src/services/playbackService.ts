@@ -94,6 +94,12 @@ export class PlaybackService {
       }
       if(!track) return;
 
+      // Update last played time for non-temporary stations
+      if (!station.isTemporary) {
+        station.lastPlayed = new Date();
+        await radioStationService.updateStation(station.id, { lastPlayed: station.lastPlayed });
+      }
+
       this.selectedStation = station;
       this.notifyStateChange();
 
