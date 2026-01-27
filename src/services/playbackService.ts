@@ -263,6 +263,17 @@ export class PlaybackService {
   }
 
   /**
+   * Seek to a specific time position in the current track
+   * @param time The time in seconds to seek to
+   */
+  public seek(time: number): void {
+    if (this.audioElement) {
+      this.audioElement.currentTime = time;
+      this.notifyStateChange();
+    }
+  }
+
+  /**
    * Set callback for playback state changes
    */
   public setOnPlaybackStateChange(callback: (state: PlaybackState) => void): void {

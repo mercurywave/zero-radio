@@ -1,5 +1,6 @@
 import React from 'react';
 import { AudioTrack } from '../services/musicCacheService';
+import { playbackService } from '../services/playbackService';
 import './PlaybackControls.css';
 
 type PlaybackControlsProps = {
@@ -29,6 +30,18 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!duration) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickPosition = e.clientX - rect.left;
+    const trackWidth = rect.width;
+    const newProgress = (clickPosition / trackWidth) * duration;
+    
+    // Seek to the clicked position
+    playbackService.seek(newProgress);
+  };
+
   return (
     <div className="playback-controls">
       <div className="control-buttons">
@@ -44,7 +57,10 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       </div>
       <div className="progress-bar">
         <span>{formatTime(progress)}</span>
-        <div className="progress-track">
+        <div 
+          className="progress-track" 
+          onClick={handleProgressClick}
+        >
           <div className="progress" style={{ width: `${Math.min(100, (progress / duration) * 100 || 0)}%` }}></div>
         </div>
         <span>{formatTime(duration)}</span>

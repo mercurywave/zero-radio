@@ -46,15 +46,21 @@
 
 .progress-track {
   flex: 1;
-  height: 4px;
+  height: 8px;
   background-color: #333;
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
+  cursor: pointer;
+  transition: height 0.2s ease, background-color 0.2s ease;
+}
+
+.progress-track:hover {
+  height: 12px;
 }
 
 .progress {
   height: 100%;
   background-color: #4caf50;
   width: 30%;
-  border-radius: 2px;
+  border-radius: 4px;
 }
