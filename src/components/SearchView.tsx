@@ -16,6 +16,23 @@ export const performSearch = async (
 
     // First, check if the search query matches an artist or album (fuzzy match)
     let results: SearchResult[] = [];
+    
+    // Get radio stations and filter by search query
+    const allStations = await radioStationService.getAllStations();
+    const stationResults = allStations.filter(station =>
+      station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (station.description && station.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+    
+    // Add station results
+    for (const station of stationResults) {
+      results.push({
+        type: 'station',
+        stationName: station.name,
+        description: station.description || '',
+        stationId: station.id
+      });
+    }
 
     let tracksConsolidated: MusicLibraryEntry[] = []
 
@@ -202,6 +219,39 @@ const SearchView: React.FC<SearchViewProps> = ({
                             onPlayStation(station, track);
                           }}
                           title="Play track"
+                        >
+                          ▶
+                        </button>
+                      )}
+                    </div>
+                  );
+
+                case 'station':
+                  return (
+                    <div key={index} className="search-result-item station-result">
+                      <div className="station-image-placeholder">
+                        <span className="station-icon">📻</span>
+                      </div>
+                      <div className="station-info">
+                        <h4>{result.stationName}</h4>
+                        <p className="station-description">{result.description || 'Radio station'}</p>
+                      </div>
+                      {onPlayStation && (
+                        <button
+                          className="play-btn"
+                          onClick={async () => {
+                            const station = await radioStationService.getStationById(result.stationId);
+                            if (station) {
+                              const nextTrack = await radioStationService.selectNextTrackForStation(
+                                station,
+                                []
+                              );
+                              if (nextTrack && onPlayStation) {
+                                onPlayStation(station, nextTrack.track);
+                              }
+                            }
+                          }}
+                          title="Play station"
                         >
                           ▶
                         </button>

@@ -21,7 +21,7 @@ export interface AudioTrack extends MusicLibraryEntry {
   albumArt: string | null;
 }
 
-export type SearchResultType = 'track' | 'artist' | 'album';
+export type SearchResultType = 'track' | 'artist' | 'album' | 'station';
 
 export interface TrackSearchResult extends MusicLibraryEntry {
   type: 'track';
@@ -44,7 +44,14 @@ export interface AlbumSearchResult {
   albumArt: string | null;
 }
 
-export type SearchResult = TrackSearchResult | ArtistSearchResult | AlbumSearchResult;
+export interface StationSearchResult {
+  type: 'station';
+  stationName: string;
+  description: string;
+  stationId: string;
+}
+
+export type SearchResult = TrackSearchResult | ArtistSearchResult | AlbumSearchResult | StationSearchResult;
 
 export interface AlbumArtEntry {
   id: string;
