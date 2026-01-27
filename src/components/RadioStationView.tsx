@@ -3,6 +3,7 @@ import SearchView, { performSearch } from './SearchView';
 import { AudioTrack, MusicCacheService, MusicLibraryEntry, SearchResult } from '../services/musicCacheService';
 import { RadioStation } from '../types/radioStation';
 import './RadioStationView.css';
+import { radioStationService } from '../services/radioStationService';
 
 const cacheService = MusicCacheService.getInstance();
 
@@ -16,15 +17,9 @@ const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlay
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Mock data for radio stations - will be replaced with actual library data
-  const suggestedStations = [
-    { id: '1', name: 'Chill Vibes' },
-    { id: '2', name: 'Rock Classics' },
-    { id: '3', name: 'Jazz Lounge' },
-    { id: '4', name: 'Electronic Beats' },
-    { id: '5', name: 'Pop Hits' },
-    { id: '6', name: 'Hip Hop Central' },
-  ]
+  // State for suggested stations from the service
+  const [suggestedStations, setSuggestedStations] = useState<RadioStation[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
 
   const recentStations = [
     { id: '7', name: 'Indie Mix' },
@@ -35,20 +30,28 @@ const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlay
     { id: '12', name: 'Reggae Vibes' },
   ]
 
-  // Initialize the cache service when component mounts
+  // Initialize the cache service and fetch suggested stations when component mounts
   useEffect(() => {
-    const initCache = async () => {
+    const initAndFetchSuggestions = async () => {
       try {
         await cacheService.initDB();
+        let allStations = await radioStationService.getAllStations();
+        // Select 5 random stations if available
+        let randomStations: RadioStation[] = [];
+        if (allStations.length > 0) {
+          randomStations = allStations.sort(() => Math.random() - 0.5).slice(0, 5);
+        }
+        setSuggestedStations(randomStations);
       } catch (error) {
         console.error('Failed to initialize database:', error);
       }
+      setIsLoadingSuggestions(false);
     };
-    
-    initCache();
+
+    initAndFetchSuggestions();
   }, []);
 
-    // Perform search when query changes
+  // Perform search when query changes
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setSearchResults([]);
@@ -74,7 +77,7 @@ const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlay
 
   return (
     <div className="radio-stations-view">
-      <SearchView 
+      <SearchView
         onSearchQueryChange={setSearchQuery}
         searchQuery={searchQuery}
         searchResults={searchResults}
@@ -82,8 +85,8 @@ const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlay
         onPlayTrack={onPlayTrack}
         onPlayStation={onPlayStation}
       />
-      
-      {searchQuery.trim() === '' && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
+
+      {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
     </div>
   )
 }
