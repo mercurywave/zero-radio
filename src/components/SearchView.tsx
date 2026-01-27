@@ -67,7 +67,7 @@ export const performSearch = async (
       });
     }
 
-    setSearchResults(results);
+    setSearchResults(results.slice(0, 20));
     setIsSearching(false);
   }
 
