@@ -2,6 +2,7 @@ import React from 'react';
 import { MusicCacheService, MusicLibraryEntry, AudioTrack, SearchResult, TrackSearchResult, ArtistSearchResult, AlbumSearchResult, AlbumArtEntry } from '../services/musicCacheService';
 import { radioStationService } from '../services/radioStationService';
 import { RadioStation } from '../types/radioStation';
+import './SearchView.css';
 
 export const performSearch = async (
   cacheService: MusicCacheService,
