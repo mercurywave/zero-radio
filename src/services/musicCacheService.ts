@@ -164,6 +164,11 @@ export class MusicCacheService {
       // Find new files and extract metadata
       const newFiles = audioFiles.filter(file => !cachedFiles.some(entry => entry.filePath === file.name));
       const newEntries: MusicLibraryEntry[] = [];
+      
+      // Update progress - start at 0%
+      if (this.onProgressCallback) {
+        this.onProgressCallback(0, newFiles.length);
+      }
 
       for (let i = 0; i < newFiles.length; i++) {
         const file = newFiles[i]!;
@@ -207,6 +212,11 @@ export class MusicCacheService {
         } catch (error) {
           console.error(`Error extracting metadata from ${file.name}:`, error);
         }
+      }
+      
+      // Clean up progress display
+      if (this.onProgressCallback) {
+        this.onProgressCallback(0, 0);
       }
 
       // Add new entries to the database
