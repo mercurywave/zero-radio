@@ -39,7 +39,8 @@ const App: React.FC = () => {
   const [currentAlbum, setCurrentAlbum] = useState<string>('')
 
   // Set up progress tracking - pass a callback function that updates our local state
-  cacheService.setOnProgress((progress, current, total) => {
+  cacheService.setOnProgress((current, total) => {
+    let progress = ((current + 1) / total) * 100;
     setProgress(progress);
     setCurrentFile(current);
     setTotalFiles(total);

@@ -70,7 +70,7 @@ const RADIO_STATIONS_STORE = 'radioStations';
 export class MusicCacheService {
   private static instance: MusicCacheService | null = null;
   private db: IDBDatabase | null = null;
-  private onProgressCallback: ((progress: number, current: number, total: number) => void) | null = null;
+  private onProgressCallback: ((current: number, total: number) => void) | null = null;
 
   private constructor() {
   }
@@ -138,7 +138,7 @@ export class MusicCacheService {
 
       // Update progress - start at 0%
       if (this.onProgressCallback) {
-        this.onProgressCallback(0, 0, audioFiles.length);
+        this.onProgressCallback(0, audioFiles.length);
       }
 
       // Create a set of file paths that exist in the directory
@@ -164,11 +164,6 @@ export class MusicCacheService {
       // Find new files and extract metadata
       const newFiles = audioFiles.filter(file => !cachedFiles.some(entry => entry.filePath === file.name));
       const newEntries: MusicLibraryEntry[] = [];
-
-      // Update progress - start at 0%
-      if (this.onProgressCallback) {
-        this.onProgressCallback(0, 0, newFiles.length);
-      }
 
       for (let i = 0; i < newFiles.length; i++) {
         const file = newFiles[i]!;
@@ -206,7 +201,7 @@ export class MusicCacheService {
 
             // Update progress - increment by 1/total files percentage
             if (this.onProgressCallback) {
-              this.onProgressCallback(((i + 1) / newFiles.length) * 100, i + 1, newFiles.length);
+              this.onProgressCallback(i + 1, newFiles.length);
             }
           }
         } catch (error) {
@@ -688,7 +683,7 @@ export class MusicCacheService {
   /**
    * Set a callback function to receive progress updates
    */
-  public setOnProgress(callback: (progress: number, current: number, total: number) => void): void {
+  public setOnProgress(callback: (current: number, total: number) => void): void {
     this.onProgressCallback = callback;
   }
 
