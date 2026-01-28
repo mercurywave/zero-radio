@@ -58,6 +58,59 @@
   height: 12px;
 }
 
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.track-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.track-text-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.album-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.track-line, .station-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: gray;
+}
+
+.track-title {
+  color: white;
+}
+
+.track-artist {
+  color: #ccc;
+}
+
+.volume-control {
+  width: 120px;
+}
+
+.volume-control input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+}
+
 .progress {
   height: 100%;
   background-color: #4caf50;

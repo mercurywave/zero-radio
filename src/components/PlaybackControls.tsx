@@ -8,9 +8,12 @@ type PlaybackControlsProps = {
   isPlaying: boolean;
   progress: number;
   duration: number;
+  volume: number;
+  selectedStation: { name: string; description?: string } | null;
   onPlayPause: () => void;
   onPrevious: () => void;
   onNext: () => void;
+  onVolumeChange: (volume: number) => void;
 };
 
 const PlaybackControls: React.FC<PlaybackControlsProps> = ({
@@ -18,9 +21,12 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   isPlaying,
   progress,
   duration,
+  volume,
+  selectedStation,
   onPlayPause,
   onPrevious,
   onNext,
+  onVolumeChange,
 }) => {
   // Format time for display
   const formatTime = (seconds: number): string => {
@@ -44,16 +50,46 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
   return (
     <div className="playback-controls">
-      <div className="control-buttons">
-        <button className="control-btn" onClick={onPrevious}>
-          ⏮
-        </button>
-        <button className="control-btn" onClick={onPlayPause}>
-          {isPlaying ? '⏸' : '▶'}
-        </button>
-        <button className="control-btn" onClick={onNext}>
-          ⏭
-        </button>
+      <div className="controls-row">
+        <div className="track-info">
+          {currentTrack && currentTrack.albumArt && (
+            <img src={currentTrack.albumArt} alt="Album art" className="album-art" />
+          )}
+          <div className="track-text-info">
+            {currentTrack && (
+              <div className="track-line">
+                <span className="track-title">{currentTrack.title}</span>
+                {currentTrack.artist && (
+                  <span className="track-artist"> - {currentTrack.artist}</span>
+                )}
+              </div>
+            )}
+            {selectedStation && (
+              <div className="station-line">{selectedStation.name}</div>
+            )}
+          </div>
+        </div>
+        <div className="volume-control">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+          />
+        </div>
+        <div className="control-buttons">
+          <button className="control-btn" onClick={onPrevious}>
+            ⏮
+          </button>
+          <button className="control-btn" onClick={onPlayPause}>
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <button className="control-btn" onClick={onNext}>
+            ⏭
+          </button>
+        </div>
       </div>
       <div className="progress-bar">
         <span>{formatTime(progress)}</span>

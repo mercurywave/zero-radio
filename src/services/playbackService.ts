@@ -13,6 +13,8 @@ export interface PlaybackState {
   nextTrack: AudioTrack | null;
 }
 
+let musicCacheService = MusicCacheService.getInstance();
+
 export class PlaybackService {
   private audioElement: HTMLAudioElement | null = null;
   private onPlaybackStateChange?: (state: PlaybackState) => void;
@@ -86,13 +88,12 @@ export class PlaybackService {
     try {
 
       // Set as selected station
-      let track: AudioTrack;
       if(!leadTrack){
-        track = (await radioStationService.selectNextTrackForStation(station, this.playbackHistory))?.track;
-      } else {
-        track = await MusicCacheService.getInstance().getTrackFromLibraryEntry(leadTrack);
+        let score = await radioStationService.selectNextTrackForStation(station, this.playbackHistory);
+        leadTrack = score?.track;
       }
-      if(!track) return;
+      if(!leadTrack) return;
+      let track = await musicCacheService.getTrackFromLibraryEntry(leadTrack);
 
       // Update last played time for non-temporary stations
       if (!station.isTemporary) {
@@ -246,9 +247,10 @@ export class PlaybackService {
           this.playbackHistory
         );
 
+
         if (nextTrackScore && nextTrackScore.track) {
-          this.nextTrack = nextTrackScore.track;
-          await this.play(nextTrackScore.track);
+          this.nextTrack = await musicCacheService.getTrackFromLibraryEntry(nextTrackScore?.track);
+          await this.play(this.nextTrack);
         }
       }
     }

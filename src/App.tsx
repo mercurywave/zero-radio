@@ -29,6 +29,9 @@ const App: React.FC = () => {
     selectedStation: null,
     nextTrack: null
   })
+  
+  // Volume state
+  const [volume, setVolume] = useState<number>(1)
 
   // Current track state (synced with playback service)
   const [currentTrack, setCurrentTrack] = useState<AudioTrack | null>(null)
@@ -109,11 +112,22 @@ const App: React.FC = () => {
             isPlaying={playbackState.isPlaying}
             progress={playbackState.progress}
             duration={playbackState.duration}
+            volume={volume}
+            selectedStation={playbackState.selectedStation ? {
+              name: playbackState.selectedStation.name,
+              ...(playbackState.selectedStation.description && { description: playbackState.selectedStation.description })
+            } : null}
             onPlayPause={async () => {
               await playbackService.togglePlayPause();
             }}
-            onPrevious={() => { }}
+            onPrevious={() => {}}
             onNext={() => playbackService.playNextTrack()}
+            onVolumeChange={(newVolume) => {
+              setVolume(newVolume);
+              if (playbackService['audioElement']) {
+                playbackService['audioElement'].volume = newVolume;
+              }
+            }}
           />
         </>
       )}

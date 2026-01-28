@@ -1,5 +1,11 @@
 import { MusicCacheService, AudioTrack, MusicLibraryEntry } from './musicCacheService';
-import { RadioStation, RadioStationCriteria, TrackScore, RadioStationAttribute } from '../types/radioStation';
+import { RadioStation, RadioStationCriteria, RadioStationAttribute } from '../types/radioStation';
+
+
+export interface TrackScore {
+  track: MusicLibraryEntry;
+  score: number;
+}
 
 export class RadioStationService {
   private musicCache: MusicCacheService;
@@ -148,16 +154,16 @@ export class RadioStationService {
     const scoredTracks: TrackScore[] = [];
 
     for (const track of allTracks) {
-      const score = this.calculateTrackScore(track as AudioTrack, station.criteria);
+      const score = this.calculateTrackScore(track, station.criteria);
       let index = recent.findIndex(t => t.id === track.id);
       if (index >= 0) {
         // Apply penalty to recently played songs
         // The last played track (index 0) gets a 100% penalty (score becomes 0)
         // Penalty decreases linearly: after 20 tracks, penalty is 0%
         const penalty = Math.max(0, 1 - index / 20);
-        scoredTracks.push({ track: track as AudioTrack, score: score * (1 - penalty) });
+        scoredTracks.push({ track: track, score: score * (1 - penalty) });
       } else if (score > 0) {
-        scoredTracks.push({ track: track as AudioTrack, score });
+        scoredTracks.push({ track: track, score });
       }
     }
 
@@ -186,7 +192,7 @@ export class RadioStationService {
   /**
    * Calculate a weighted score for how well a track matches the station criteria
    */
-  private calculateTrackScore(track: AudioTrack, criteria: RadioStationCriteria[]): number {
+  private calculateTrackScore(track: MusicLibraryEntry, criteria: RadioStationCriteria[]): number {
     let totalWeight = 0;
     let weightedSum = 0;
 
@@ -232,7 +238,7 @@ export class RadioStationService {
   /**
    * Calculate how well a track matches a specific criterion
    */
-  private calculateAttributeMatch(track: AudioTrack, criterion: RadioStationCriteria): number {
+  private calculateAttributeMatch(track: MusicLibraryEntry, criterion: RadioStationCriteria): number {
     switch (criterion.attribute) {
       case 'artist':
         return this.matchString(track.artist, criterion.value);

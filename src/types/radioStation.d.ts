@@ -17,8 +17,3 @@ export interface RadioStationCriteria {
   value: string;
   weight: number; // 0-1 scale
 }
-
-export interface TrackScore {
-  track: AudioTrack;
-  score: number;
-}
