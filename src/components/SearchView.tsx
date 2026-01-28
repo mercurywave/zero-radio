@@ -4,6 +4,9 @@ import { radioStationService } from '../services/radioStationService';
 import { RadioStation } from '../types/radioStation';
 import './SearchView.css';
 
+// track parallel events
+let _generationId = 0;
+
 export const performSearch = async (
   cacheService: MusicCacheService,
   searchQuery: string,
@@ -11,6 +14,7 @@ export const performSearch = async (
   setIsSearching: (isSearching: boolean) => void
 ): Promise<void> => {
   try {
+    let gen = ++_generationId;
     setIsSearching(true);
     const allEntries = await cacheService.getAllCachedEntries();
 
@@ -85,8 +89,10 @@ export const performSearch = async (
       });
     }
 
-    setSearchResults(results.slice(0, 20));
-    setIsSearching(false);
+    if(gen === _generationId){
+      setSearchResults(results.slice(0, 20));
+      setIsSearching(false);
+    }
   }
 
   catch (error) {
