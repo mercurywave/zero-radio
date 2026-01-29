@@ -99,6 +99,28 @@ const App: React.FC = () => {
     };
   }, [])
 
+  // Handle space bar for play/pause toggle
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        // Don't handle space bar if focus is on an input, textarea, or contenteditable element
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'INPUT' || 
+            target.tagName === 'TEXTAREA' ||
+            target.isContentEditable) {
+          return;
+        }
+        e.preventDefault();
+        await playbackService.togglePlayPause();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [])
+
   return (
     <div className="app">
       {currentView === 'folderSelect' ? (
