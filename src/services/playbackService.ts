@@ -105,7 +105,7 @@ export class PlaybackService {
     // Update media session metadata when track changes
     if ('mediaSession' in navigator && this.currentTrack) {
       const artwork = this.currentTrack.albumArt ? [{ src: this.currentTrack.albumArt, sizes: '96x96', type: 'image/png' }] : [];
-      
+
       navigator.mediaSession.metadata = new MediaMetadata({
         title: this.currentTrack.title,
         artist: this.currentTrack.artist || '',
@@ -170,7 +170,7 @@ export class PlaybackService {
     if (this.currentTrack && this.currentTrack.id !== track.id) {
       this.playbackHistory.push(this.currentTrack);
     }
-    
+
     await this.playInternal(track);
   }
 
@@ -202,10 +202,15 @@ export class PlaybackService {
   }
 
   /**
-   * Toggle play/pause
-   */
+    * Toggle play/pause
+    */
   public async togglePlayPause(): Promise<void> {
-    if (!this.audioElement) return;
+    if (!this.currentTrack) {
+      // No current track - start playing the default station
+      const defaultStation = await radioStationService.getDefaultStation();
+      await this.playStation(defaultStation);
+      return;
+    } else if (!this.audioElement) return;
 
     if (this.audioElement.paused && this.currentTrack) {
       // Resume playback without reloading the track
