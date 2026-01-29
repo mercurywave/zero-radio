@@ -8,7 +8,7 @@ import './index.css'
 import './components/ProgressPopover.css'
 import { tryUseCachedFolder } from './utils/fileHelpers'
 import { playbackService, PlaybackState } from './services/playbackService'
-import { RadioStation } from './types/radioStation'
+import { RadioStation } from './services/radioStationService'
 
 const cacheService = MusicCacheService.getInstance();
 

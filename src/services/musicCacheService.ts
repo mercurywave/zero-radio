@@ -1,6 +1,6 @@
 import { extractMetadata, extractAlbumArt } from './metadataService';
 import { scanDirectoryForAudioFiles } from './fileSystemService';
-import { RadioStationAttribute } from '../types/radioStation';
+import { RadioStationAttribute } from './radioStationService';
 
 // Define types for our music library entries
 export interface MusicLibraryEntry {

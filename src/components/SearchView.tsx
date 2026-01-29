@@ -1,7 +1,6 @@
 import React from 'react';
 import { MusicCacheService, MusicLibraryEntry, AudioTrack, SearchResult, TrackSearchResult, ArtistSearchResult, AlbumSearchResult, AlbumArtEntry } from '../services/musicCacheService';
-import { radioStationService } from '../services/radioStationService';
-import { RadioStation } from '../types/radioStation';
+import { RadioStation, radioStationService } from '../services/radioStationService';
 import './SearchView.css';
 
 // track parallel events
