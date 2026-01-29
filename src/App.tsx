@@ -121,7 +121,9 @@ const App: React.FC = () => {
             onPlayPause={async () => {
               await playbackService.togglePlayPause();
             }}
-            onPrevious={() => {}}
+            onPrevious={async () => {
+              await playbackService.playPrevious();
+            }}
             onNext={() => playbackService.playNextTrack()}
             onVolumeChange={(newVolume) => {
               setVolume(newVolume);

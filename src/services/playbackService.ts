@@ -88,11 +88,11 @@ export class PlaybackService {
     try {
 
       // Set as selected station
-      if(!leadTrack){
+      if (!leadTrack) {
         let score = await radioStationService.selectNextTrackForStation(station, this.playbackHistory);
         leadTrack = score?.track;
       }
-      if(!leadTrack) return;
+      if (!leadTrack) return;
       let track = await musicCacheService.getTrackFromLibraryEntry(leadTrack);
 
       // Update last played time for non-temporary stations
@@ -113,41 +113,12 @@ export class PlaybackService {
 
   public async play(track: AudioTrack): Promise<void> {
     if (!track) return;
-
-    try {
-      // Add current track to history before playing new one
-      if (this.currentTrack && this.currentTrack.id !== track.id) {
-        this.playbackHistory.push(this.currentTrack);
-      }
-
-      this.currentTrack = track;
-
-      const audioFile = await loadAudioFileFromTrack(track);
-
-      // Ensure audio element exists
-      if (!this.audioElement) {
-        this.createAudioElement();
-      }
-
-      if (!audioFile || !this.audioElement) {
-        console.error('Could not load or initialize audio');
-        return;
-      }
-
-      // Load the file
-      const objectUrl = URL.createObjectURL(audioFile);
-      this.audioElement.src = objectUrl;
-
-      try {
-        await this.audioElement.play();
-      } catch (error) {
-        console.error('Error playing audio:', error);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Playback error:', error);
-      throw error;
+    // Add current track to history before playing new one
+    if (this.currentTrack && this.currentTrack.id !== track.id) {
+      this.playbackHistory.push(this.currentTrack);
     }
+    
+    await this.playInternal(track);
   }
 
   /**
@@ -272,6 +243,69 @@ export class PlaybackService {
     if (this.audioElement) {
       this.audioElement.currentTime = time;
       this.notifyStateChange();
+    }
+  }
+
+  /**
+   * Play a track without adding it to history (used for navigation)
+   * @param track The AudioTrack to play
+   */
+  private async playInternal(track: AudioTrack): Promise<void> {
+    if (!track) return;
+
+    try {
+      this.currentTrack = track;
+
+      const audioFile = await loadAudioFileFromTrack(track);
+
+      // Ensure audio element exists
+      if (!this.audioElement) {
+        this.createAudioElement();
+      }
+
+      if (!audioFile || !this.audioElement) {
+        console.error('Could not load or initialize audio');
+        return;
+      }
+
+      // Load the file
+      const objectUrl = URL.createObjectURL(audioFile);
+      this.audioElement.src = objectUrl;
+
+      try {
+        await this.audioElement.play();
+      } catch (error) {
+        console.error('Error playing audio:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Playback error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Go back in playback - either restart current track or go to previous track
+   */
+  public async playPrevious(): Promise<void> {
+    if (!this.currentTrack || !this.audioElement) return;
+
+    const currentProgress = this.audioElement.currentTime;
+
+    // If past 5 seconds, go back to beginning of current track
+    if (currentProgress > 5) {
+      this.seek(0);
+      // Resume playback if it was playing
+      if (!this.audioElement.paused) {
+        await this.audioElement.play();
+      }
+    } else {
+      // Otherwise go back to previous track in history
+      const previousTrack = this.playbackHistory.pop();
+
+      if (previousTrack) {
+        await this.playInternal(previousTrack);
+      }
     }
   }
 
