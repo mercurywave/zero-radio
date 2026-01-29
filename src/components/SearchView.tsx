@@ -20,14 +20,14 @@ export const performSearch = async (
 
     // First, check if the search query matches an artist or album (fuzzy match)
     let results: SearchResult[] = [];
-    
+
     // Get radio stations and filter by search query
     const allStations = await radioStationService.getAllStations();
     const stationResults = allStations.filter(station =>
       station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (station.description && station.description.toLowerCase().includes(searchQuery.toLowerCase()))
     );
-    
+
     // Add station results
     for (const station of stationResults) {
       results.push({
@@ -89,7 +89,7 @@ export const performSearch = async (
       });
     }
 
-    if(gen === _generationId){
+    if (gen === _generationId) {
       setSearchResults(results.slice(0, 20));
       setIsSearching(false);
     }
@@ -122,13 +122,24 @@ const SearchView: React.FC<SearchViewProps> = ({
     <div className="search-wrapper">
       {/* Search bar at top middle */}
       <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search artists, songs, or albums..."
-          value={searchQuery}
-          onChange={(e) => onSearchQueryChange(e.target.value)}
-          className="search-bar"
-        />
+        <div className="search-input-wrapper">
+          <input
+            type="text"
+            placeholder="Search artists, songs, or albums..."
+            value={searchQuery}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
+            className="search-bar"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => onSearchQueryChange('')}
+              className="search-clear-btn"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
 
       {searchQuery.trim() !== '' ? (
