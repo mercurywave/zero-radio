@@ -25,6 +25,7 @@ export class PlaybackService {
 
   constructor() {
     this.createAudioElement();
+    this.setupMediaSession();
   }
 
   private createAudioElement(): void {
@@ -47,6 +48,47 @@ export class PlaybackService {
     }
   }
 
+  private setupMediaSession(): void {
+    if (!('mediaSession' in navigator)) return;
+
+    // Set up media session metadata and action handlers
+    navigator.mediaSession.setActionHandler('play', () => {
+      this.togglePlayPause();
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      this.pause();
+    });
+
+    navigator.mediaSession.setActionHandler('previoustrack', async () => {
+      await this.playPrevious();
+    });
+
+    navigator.mediaSession.setActionHandler('nexttrack', async () => {
+      await this.playNextTrack();
+    });
+
+    navigator.mediaSession.setActionHandler('seekbackward', () => {
+      if (this.audioElement) {
+        const newTime = Math.max(0, this.audioElement.currentTime - 15);
+        this.seek(newTime);
+      }
+    });
+
+    navigator.mediaSession.setActionHandler('seekforward', () => {
+      if (this.audioElement) {
+        const newTime = Math.min(this.audioElement.duration || Infinity, this.audioElement.currentTime + 15);
+        this.seek(newTime);
+      }
+    });
+
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+      if (this.audioElement && details.seekTime !== undefined) {
+        this.seek(details.seekTime);
+      }
+    });
+  }
+
   private notifyStateChange(): void {
     if (this.onPlaybackStateChange && this.audioElement) {
       const state: PlaybackState = {
@@ -59,6 +101,18 @@ export class PlaybackService {
         nextTrack: this.nextTrack
       };
       this.onPlaybackStateChange(state);
+    }
+
+    // Update media session metadata when track changes
+    if ('mediaSession' in navigator && this.currentTrack) {
+      const artwork = this.currentTrack.albumArt ? [{ src: this.currentTrack.albumArt, sizes: '96x96', type: 'image/png' }] : [];
+      
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: this.currentTrack.title,
+        artist: this.currentTrack.artist || '',
+        album: this.currentTrack.album || '',
+        artwork
+      });
     }
   }
 
