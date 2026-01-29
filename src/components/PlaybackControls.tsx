@@ -40,9 +40,9 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   // Get tooltip for track attributes based on station criteria
   const getTrackAttributesTooltip = (track: AudioTrack) => {
     if (!track) return '';
-    
+
     const attributes = [];
-    
+
     if (track.artist) {
       attributes.push(`Artist: ${track.artist}`);
     }
@@ -59,18 +59,18 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       const decade = Math.floor(track.year / 10) * 10;
       attributes.push(`Decade: ${decade}s`);
     }
-    
+
     return attributes.join('\n');
   };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!duration) return;
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const clickPosition = e.clientX - rect.left;
     const trackWidth = rect.width;
     const newProgress = (clickPosition / trackWidth) * duration;
-    
+
     // Seek to the clicked position
     playbackService.seek(newProgress);
   };
@@ -83,20 +83,24 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             <img src={currentTrack.albumArt} alt="Album art" className="album-art" />
           )}
           <div className="track-text-info">
-              {currentTrack && selectedStation && (
-                <div 
-                  className="track-line"
-                  title={getTrackAttributesTooltip(currentTrack)}
-                >
-                  <span className="track-title">{currentTrack.title}</span>
-                  {currentTrack.artist && (
-                    <span className="track-artist"> - {currentTrack.artist}</span>
-                  )}
-                </div>
-              )}
-          {selectedStation && (
-            <div className="station-line" title={selectedStation.description || ''}>{selectedStation.name}</div>
-          )}
+            {currentTrack && selectedStation && (
+              <div
+                className="track-line"
+                title={getTrackAttributesTooltip(currentTrack)}
+              >
+                <span className="track-title">{currentTrack.title}</span>
+                {currentTrack.artist && (
+                  <span className="track-artist"> - {currentTrack.artist}</span>
+                )}
+              </div>
+            )}
+            {selectedStation && (
+              <div className="station-line" title={
+                `Criteria:\n${selectedStation.criteria
+                  .map(criterion => `${criterion.attribute}: ${criterion.value} (${criterion.weight})`)
+                  .join('\n')}`
+              }>{selectedStation.name}</div>
+            )}
           </div>
         </div>
         <div className="volume-control">
@@ -123,8 +127,8 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       </div>
       <div className="progress-bar">
         <span>{formatTime(progress)}</span>
-        <div 
-          className="progress-track" 
+        <div
+          className="progress-track"
           onClick={handleProgressClick}
         >
           <div className="progress" style={{ width: `${Math.min(100, (progress / duration) * 100 || 0)}%` }}></div>
