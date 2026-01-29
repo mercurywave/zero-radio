@@ -136,10 +136,7 @@ const App: React.FC = () => {
             progress={playbackState.progress}
             duration={playbackState.duration}
             volume={volume}
-            selectedStation={playbackState.selectedStation ? {
-              name: playbackState.selectedStation.name,
-              ...(playbackState.selectedStation.description && { description: playbackState.selectedStation.description })
-            } : null}
+            selectedStation={playbackState.selectedStation}
             onPlayPause={async () => {
               await playbackService.togglePlayPause();
             }}

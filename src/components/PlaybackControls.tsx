@@ -2,6 +2,7 @@ import React from 'react';
 import { AudioTrack } from '../services/musicCacheService';
 import { playbackService } from '../services/playbackService';
 import './PlaybackControls.css';
+import { RadioStation } from '../services/radioStationService';
 
 type PlaybackControlsProps = {
   currentTrack: AudioTrack | null;
@@ -9,7 +10,7 @@ type PlaybackControlsProps = {
   progress: number;
   duration: number;
   volume: number;
-  selectedStation: { name: string; description?: string } | null;
+  selectedStation: RadioStation | null;
   onPlayPause: () => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -36,6 +37,32 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Get tooltip for track attributes based on station criteria
+  const getTrackAttributesTooltip = (track: AudioTrack) => {
+    if (!track) return '';
+    
+    const attributes = [];
+    
+    if (track.artist) {
+      attributes.push(`Artist: ${track.artist}`);
+    }
+    if (track.album) {
+      attributes.push(`Album: ${track.album}`);
+    }
+    if (track.genre) {
+      attributes.push(`Genre: ${track.genre}`);
+    }
+    if (track.mood) {
+      attributes.push(`Mood: ${track.mood}`);
+    }
+    if (track.year) {
+      const decade = Math.floor(track.year / 10) * 10;
+      attributes.push(`Decade: ${decade}s`);
+    }
+    
+    return attributes.join('\n');
+  };
+
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!duration) return;
     
@@ -56,17 +83,20 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             <img src={currentTrack.albumArt} alt="Album art" className="album-art" />
           )}
           <div className="track-text-info">
-            {currentTrack && (
-              <div className="track-line">
-                <span className="track-title">{currentTrack.title}</span>
-                {currentTrack.artist && (
-                  <span className="track-artist"> - {currentTrack.artist}</span>
-                )}
-              </div>
-            )}
-            {selectedStation && (
-              <div className="station-line">{selectedStation.name}</div>
-            )}
+              {currentTrack && selectedStation && (
+                <div 
+                  className="track-line"
+                  title={getTrackAttributesTooltip(currentTrack)}
+                >
+                  <span className="track-title">{currentTrack.title}</span>
+                  {currentTrack.artist && (
+                    <span className="track-artist"> - {currentTrack.artist}</span>
+                  )}
+                </div>
+              )}
+          {selectedStation && (
+            <div className="station-line" title={selectedStation.description || ''}>{selectedStation.name}</div>
+          )}
           </div>
         </div>
         <div className="volume-control">
