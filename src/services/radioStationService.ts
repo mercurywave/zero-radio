@@ -136,8 +136,8 @@ export class RadioStationService {
   public async getDefaultStation(): Promise<RadioStation> {
     let station = (await this.getAllStations())
       .find(station => station.isAllMusic === true);
-    if(station) return station;
-      
+    if (station) return station;
+
     return await radioStationService.createStation({
       name: "All Music",
       description: "I'm feeling lucky",
@@ -234,7 +234,7 @@ export class RadioStationService {
     let weightedSum = 0;
 
     // if there is no criteria, everything matches
-    if(criteria.length === 0) return 1;
+    if (criteria.length === 0) return 1;
 
     // Normalize weights so they sum to 1
     const criterionWeights = this.normalizeWeights(criteria);
@@ -299,8 +299,8 @@ export class RadioStationService {
         // Extract decade from year
         const trackDecade = Math.floor(track.year / 10) * 10;
         const criterionDecade = parseInt(criterion.value);
-        if(trackDecade === criterionDecade) {return 1;}
-        let diff = Math.min(criterionDecade - track.year, criterionDecade + 10 - track.year);
+        if (trackDecade === criterionDecade) { return 1; }
+        let diff = Math.min(Math.abs(criterionDecade - track.year), Math.abs(criterionDecade + 10 - track.year));
         return Math.max(1 - diff * .2, 0);
       default:
         return 0;
@@ -429,7 +429,7 @@ export class RadioStationService {
         // Find all criteria with this attribute and update them
         averagedCriteria.forEach((criterion, index) => {
           if (criterion.attribute === attr && adjustment !== undefined) {
-          // Apply the adjustment multiplier to the weight
+            // Apply the adjustment multiplier to the weight
             criterion.weight *= adjustment;
             // Update in place since we're modifying the array directly
             averagedCriteria[index] = { ...criterion };
