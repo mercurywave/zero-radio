@@ -5,21 +5,19 @@ This document provides guidelines and commands for agentic coding agents operati
 ## Build/Lint/Test Commands
 
 ### Build Commands
-- `npm run build` - Build the project
-- `npm run dev` - Start development server
-- `npm run start` - Start the application
+- `npm run build` - Build the project (runs TypeScript compilation + Vite build)
+- `npm run dev` - Start development server on http://localhost:3000
+- `npm run preview` - Preview production build locally
 
 ### Lint Commands
-- `npm run lint` - Run linter
-- `npm run lint:fix` - Run linter with auto-fix
-- `npm run typecheck` - Run TypeScript type checking
+- `npm run typecheck` - Run TypeScript type checking with strict mode enabled
 
 ### Test Commands
-- `npm test` - Run all tests
+- `npm test` - Run all tests using Vitest
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
-- `npm run test -- --testNamePattern="name"` - Run specific test by name
-- `npm run test -- path/to/test-file.test.ts` - Run single test file
+- `npm test -- --testNamePattern="name"` - Run specific test by name
+- `npm test -- path/to/test-file.test.ts` - Run single test file
 
 ## Code Style Guidelines
 
@@ -31,27 +29,28 @@ This document provides guidelines and commands for agentic coding agents operati
 - Use default imports for entire modules when appropriate
 
 ### Formatting
-- Use Prettier for code formatting (configured via .prettierrc)
 - 2-space indentation
 - Unix line endings
 - No trailing whitespace
 - Single quotes for strings unless template literals are needed
 - Always use semicolons
+- Keep lines under 80 characters where possible
 
 ### Types
-- Use TypeScript for all code
+- Use TypeScript for all code with strict mode enabled
 - Prefer interfaces over types when possible
-- Use strict typing with no implicit any
+- Use strict typing with no implicit any (use explicit types)
 - Define explicit return types for functions
 - Use generics for reusable components
 - Use union types for optional values
 
 ### Naming Conventions
-- PascalCase for component names
-- camelCase for variables and functions
+- PascalCase for component names and classes
+- camelCase for variables, functions, and methods
 - UPPER_CASE for constants
 - kebab-case for file names
 - Prefix private members with underscore (_)
+- Use descriptive names (e.g., `playbackService` instead of `ps`)
 
 ### Error Handling
 - Use try/catch blocks for asynchronous operations
@@ -59,29 +58,32 @@ This document provides guidelines and commands for agentic coding agents operati
 - Log errors appropriately using console.error or structured logging
 - Handle promises with .catch() or async/await patterns
 - Validate inputs and throw descriptive errors
+- Include error handling for audio playback failures
 
-### Git Hooks
-- Pre-commit hooks run linting and formatting checks
-- Commit messages should follow conventional commits format
-- All changes must pass tests before committing
-
-## Cursor/Copilot Rules
-
-### Cursor Rules
-- Follow the project's existing code style and conventions
-- Maintain consistency with the codebase's architecture
-- Use descriptive variable and function names
-- Write clear, concise comments for complex logic
-
-### Copilot Instructions
-- Generate code that follows existing patterns in the codebase
-- Prioritize readability and maintainability over cleverness
-- Ensure all generated code is properly typed
-- Follow project-specific naming conventions
-- Include appropriate documentation for new functions/components
-
-## Project Structure
+### Project Structure
 - Source files in `src/` directory
-- Tests in `tests/` or `__tests__/` directories
+- Components in `src/components/`
+- Services in `src/services/`
+- Utilities in `src/utils/`
+- Types in `src/types/`
 - Configuration files at root level (package.json, tsconfig.json, etc.)
-- Documentation in `docs/` directory
+
+### React-Specific Guidelines
+- Use functional components with TypeScript
+- Prefer hooks over class components
+- Extract complex logic into custom hooks when appropriate
+- Keep components focused and reusable
+- Use proper typing for props using interfaces
+
+### Service Layer Patterns
+- Services should be stateless where possible
+- Use singleton pattern for shared services (e.g., `MusicCacheService`, `PlaybackService`)
+- Implement proper cleanup methods (e.g., `destroy()` for audio resources)
+- Handle media session integration for browser controls
+
+### State Management
+- Prefer local component state for UI-related state
+- Use service classes for domain-specific state (e.g., playback, music cache)
+- Implement callback patterns for state changes rather than direct subscriptions
+- Keep state updates synchronous when possible
+
