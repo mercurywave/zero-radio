@@ -29,7 +29,7 @@ const App: React.FC = () => {
     selectedStation: null,
     nextTrack: null
   })
-  
+
   // Volume state
   const [volume, setVolume] = useState<number>(1)
 
@@ -64,15 +64,18 @@ const App: React.FC = () => {
     playbackService.playStation(station, leadTrack);
   }
 
+  const loadHandler = (async () => {
+    const folder = await tryUseCachedFolder();
+    if (folder) {
+      // If we have a saved folder, skip to radio stations view
+      await cacheService.loadFromFolder(folder);
+      setCurrentView('radioStations');
+    }
+  });
+
   // Check for saved folder on initial load
   useEffect(() => {
-    tryUseCachedFolder().then(folder => {
-      if (folder) {
-        // If we have a saved folder, skip to radio stations view
-        setCurrentView('radioStations');
-        cacheService.loadFromFolder(folder);
-      }
-    });
+    loadHandler();
   }, [])
 
   // Set up playback service callback
@@ -105,9 +108,9 @@ const App: React.FC = () => {
       if (e.code === 'Space') {
         // Don't handle space bar if focus is on an input, textarea, or contenteditable element
         const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || 
-            target.tagName === 'TEXTAREA' ||
-            target.isContentEditable) {
+        if (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable) {
           return;
         }
         e.preventDefault();
