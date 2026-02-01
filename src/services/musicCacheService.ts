@@ -721,12 +721,25 @@ export class MusicCacheService {
 
 
     // Find a genre criterion
-    const genreCriterion = station.criteria.find(c => c.attribute === 'genre');
-    if (!genreCriterion) return;
+    let criterion = station.criteria.find(c => c.attribute === 'genre');
+    criterion ??= station.criteria.find(c => c.attribute === 'mood');
+    criterion ??= station.criteria.find(c => c.attribute === 'decade');
+    if (!criterion) return;
 
-    const genre = genreCriterion.value.toLowerCase().replace(/[^\w\s]/g, '')
+    const genre = criterion.value.toLowerCase().replace(/[^\w\s]/g, '')
       .split(' ').filter(w => w !== '').join(' '); // Clean up ampersands
-    const availableImages = imagesByGenre.get(genre);
+    let availableImages = imagesByGenre.get(genre);
+
+    // If the full genre name doesn't match, try individual words in reverse order
+    if (!availableImages || availableImages.length === 0) {
+      const genreWords = genre.split(' ').reverse();
+      for (const word of genreWords) {
+        availableImages = imagesByGenre.get(word);
+        if (availableImages && availableImages.length > 0) {
+          break; // Found a match, stop searching
+        }
+      }
+    }
 
     let found = false;
     if (availableImages && availableImages.length > 0) {
@@ -742,7 +755,7 @@ export class MusicCacheService {
       }
     }
     if(!found){
-      console.log(`Couldn't find image for genre ${genre}`);
+      console.log(`Couldn't find image for ${genre}`);
     }
   }
 
