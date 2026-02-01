@@ -590,6 +590,22 @@ export class MusicCacheService {
     for (const [attribute, groups] of Object.entries(groupsByAttribute)) {
       for (const [groupKey, tracks] of groups) {
         if (tracks.length > 20) {
+          // Special handling for genre+decade stations - only create if count is between 30-70% of genre count
+          if (attribute === 'genre+decade') {
+            const parts = groupKey.split('|');
+            if (parts.length < 2) continue;
+            const [genre, decade] = parts;
+            const genreTracks = groupsByAttribute.genre.get(genre!.toLowerCase());
+            if (genreTracks && genreTracks.length > 0) {
+              const percentage = (tracks.length / genreTracks.length) * 100;
+              if (percentage < 20 || percentage > 70) {
+                continue; // Skip this genre+decade combination
+              }
+            } else {
+              continue; // Skip if no matching genre tracks found
+            }
+          }
+
           // Create criteria based on the grouping attribute
           const criteria = this.createCriteriaFromGroup(attribute as 'artist' | 'album' | 'genre' | 'mood' | 'decade' | 'genre+decade', groupKey);
 
@@ -608,8 +624,11 @@ export class MusicCacheService {
               stationName = `${groupKey}'s`;
               break;
             case 'genre+decade':
-              const [genre, decade] = groupKey.split('|');
-              stationName = `${decade} ${genre}`;
+              const parts = groupKey.split('|');
+              if (parts.length >= 2) {
+                const [genre, decade] = parts;
+                stationName = `${decade} ${genre}`;
+              }
               break;
           }
 
