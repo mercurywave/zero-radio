@@ -49,6 +49,7 @@ export interface StationSearchResult {
   stationName: string;
   description: string;
   stationId: string;
+  imagePath: string | undefined;
 }
 
 export type SearchResult = TrackSearchResult | ArtistSearchResult | AlbumSearchResult | StationSearchResult;

@@ -33,7 +33,8 @@ export const performSearch = async (
         type: 'station',
         stationName: station.name,
         description: station.description || '',
-        stationId: station.id
+        stationId: station.id,
+        imagePath: station.imagePath,
       });
     }
 
@@ -157,9 +158,9 @@ const SearchView: React.FC<SearchViewProps> = ({
                 case 'track':
                   return (
                     <div key={index} className="search-result-item">
-                      <div className="station-image-placeholder">
+                      <div className="result-image-placeholder">
                         {result.albumArt ? (
-                          <img src={result.albumArt} alt={`${result.title} album art`} className="album-art" />
+                          <img src={result.albumArt} alt={`${result.title} album art`} className="result-art" />
                         ) : (
                           <span className="station-icon">🎵</span>
                         )}
@@ -184,7 +185,7 @@ const SearchView: React.FC<SearchViewProps> = ({
                 case 'artist':
                   return (
                     <div key={index} className="search-result-item artist-result">
-                      <div className="station-image-placeholder">
+                      <div className="result-image-placeholder">
                         <span className="station-icon">👤</span>
                       </div>
                       <div className="station-info">
@@ -212,9 +213,9 @@ const SearchView: React.FC<SearchViewProps> = ({
                 case 'album':
                   return (
                     <div key={index} className="search-result-item album-result">
-                      <div className="station-image-placeholder">
+                      <div className={"result-image-placeholder"}>
                         {result.albumArt ? (
-                          <img src={result.albumArt} alt={`${result.albumName} album art`} className="album-art" />
+                          <img src={result.albumArt} alt={`${result.albumName} album art`} className="result-art" />
                         ) : (
                           <span className="station-icon">📀</span>
                         )}
@@ -245,11 +246,15 @@ const SearchView: React.FC<SearchViewProps> = ({
                 case 'station':
                   return (
                     <div key={index} className="search-result-item station-result">
-                      <div className="station-image-placeholder">
-                        <span className="station-icon">📻</span>
+                      <div className="result-image-placeholder">
+                        {result.imagePath ? (
+                          <img src={result.imagePath} alt={`${result.imagePath} station`} className="result-art" />
+                        ) : (
+                          <span className="station-icon">📻</span>
+                        )}
                       </div>
                       <div className="station-info">
-                        <h4>{result.stationName}</h4>
+                        <h4>📻 {result.stationName}</h4>
                         <p className="station-description">{result.description || 'Radio station'}</p>
                       </div>
                       {onPlayStation && (
