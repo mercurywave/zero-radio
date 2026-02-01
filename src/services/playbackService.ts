@@ -151,7 +151,7 @@ export class PlaybackService {
       // Update last played time for non-temporary stations
       if (!station.isTemporary) {
         station.lastPlayed = new Date();
-        await radioStationService.updateStation(station.id, { lastPlayed: station.lastPlayed });
+        await radioStationService.updateStation(station, { lastPlayed: station.lastPlayed });
       }
 
       this.selectedStation = station;

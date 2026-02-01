@@ -740,20 +740,18 @@ export class MusicCacheService {
       }
     }
 
-    let found = false;
     if (availableImages && availableImages.length > 0) {
       // Find an image that hasn't been assigned yet
       for (const imagePath of availableImages) {
         if (!assignedImages.includes(imagePath)) {
-          await radioStationService.updateStation(station.id, {
+          await radioStationService.updateStation(station, {
             imagePath: imagePath
           });
-          found = true;
           break;
         }
       }
     }
-    if(!found){
+    if(!station.imagePath){
       console.log(`Couldn't find image for ${genre}`);
     }
   }
