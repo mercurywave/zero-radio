@@ -628,7 +628,7 @@ export class MusicCacheService {
     }
 
     if (createdStations.length > 0) {
-      createdStations.sort((a, b) => a[1] - b[1]);
+      createdStations.sort((a, b) => b[1] - a[1]);
       for (const pair of createdStations) {
         await this.assignImagesToStation(pair[0]);
       }
