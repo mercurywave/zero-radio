@@ -724,9 +724,11 @@ export class MusicCacheService {
     const genreCriterion = station.criteria.find(c => c.attribute === 'genre');
     if (!genreCriterion) return;
 
-    const genre = genreCriterion.value.toLowerCase();
+    const genre = genreCriterion.value.toLowerCase().replace(/[^\w\s]/g, '')
+      .split(' ').filter(w => w !== '').join(' '); // Clean up ampersands
     const availableImages = imagesByGenre.get(genre);
 
+    let found = false;
     if (availableImages && availableImages.length > 0) {
       // Find an image that hasn't been assigned yet
       for (const imagePath of availableImages) {
@@ -734,9 +736,13 @@ export class MusicCacheService {
           await radioStationService.updateStation(station.id, {
             imagePath: imagePath
           });
+          found = true;
           break;
         }
       }
+    }
+    if(!found){
+      console.log(`Couldn't find image for genre ${genre}`);
     }
   }
 
