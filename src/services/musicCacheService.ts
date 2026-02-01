@@ -600,17 +600,15 @@ export class MusicCacheService {
               stationName = `${artist} - ${album}`;
               break;
             case 'genre':
-              stationName = `Genre: ${groupKey}`;
-              break;
             case 'mood':
-              stationName = `Mood: ${groupKey}`;
+              stationName = groupKey;
               break;
             case 'decade':
-              stationName = `Decade: ${groupKey}'s`;
+              stationName = `${groupKey}'s`;
               break;
             case 'genre+decade':
               const [genre, decade] = groupKey.split('|');
-              stationName = `${genre} (${decade}'s)`;
+              stationName = `${decade} ${genre}`;
               break;
           }
 
