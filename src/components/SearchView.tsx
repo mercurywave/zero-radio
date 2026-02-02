@@ -110,6 +110,7 @@ interface SearchViewProps {
   onPlayStation?: ((station: RadioStation, leadTrack: MusicLibraryEntry) => void) | undefined;
   onAlbumSelected?: ((album: any) => void) | undefined;
   onArtistSelected?: ((artistName: string) => void) | undefined;
+  onStationSelected?: ((stationId: string) => void) | undefined;
 }
 
 const SearchView: React.FC<SearchViewProps> = ({
@@ -120,7 +121,8 @@ const SearchView: React.FC<SearchViewProps> = ({
   onPlayTrack,
   onPlayStation,
   onAlbumSelected,
-  onArtistSelected
+  onArtistSelected,
+  onStationSelected
 }) => {
   return (
     <div className="search-wrapper">
@@ -259,7 +261,11 @@ case 'artist':
 
                 case 'station':
                   return (
-                    <div key={index} className="search-result-item station-result">
+                    <div 
+                      key={index} 
+                      className="search-result-item station-result"
+                      onClick={() => onStationSelected && onStationSelected(result.stationId)}
+                    >
                       <div className="result-image-placeholder">
                         {result.imagePath ? (
                           <img src={result.imagePath} alt={`${result.imagePath} station`} className="result-art" />

@@ -5,6 +5,7 @@ import FolderSelectView from './components/FolderSelectView'
 import MainView from './components/MainView'
 import AlbumDetailView from './components/AlbumDetailView'
 import ArtistDetailView from './components/ArtistDetailView'
+import RadioStationDetailView from './components/RadioStationDetailView'
 import PlaybackControls from './components/PlaybackControls'
 import './index.css'
 import './components/ProgressPopover.css'
@@ -15,7 +16,7 @@ import { RadioStation } from './services/radioStationService'
 const cacheService = MusicCacheService.getInstance();
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' | 'albumDetail' | 'artistDetail'>('folderSelect')
+  const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' | 'albumDetail' | 'artistDetail' | 'stationDetail'>('folderSelect')
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentFile, setCurrentFile] = useState(0)
@@ -45,6 +46,9 @@ const App: React.FC = () => {
   
   // Artist detail view state
   const [currentArtistName, setCurrentArtistName] = useState<string>('')
+  
+  // Station detail view state
+  const [currentStationId, setCurrentStationId] = useState<string>('')
 
   // Set up progress tracking - pass a callback function that updates our local state
   cacheService.setOnProgress((current, total) => {
@@ -142,36 +146,45 @@ const App: React.FC = () => {
       ) : (
         <div className="scrollable-content-wrapper">
           <div className="scrollable-content">
-            {currentView === 'albumDetail' ? (
-              <AlbumDetailView
-                album={currentAlbumDetail}
-                onBack={() => setCurrentView('radioStations')}
-                onPlayTrack={handlePlayTrack}
-              />
-            ) : currentView === 'artistDetail' ? (
-              <ArtistDetailView
-                artistName={currentArtistName}
-                onBack={() => setCurrentView('radioStations')}
-                onPlayTrack={handlePlayTrack}
-                onAlbumSelected={(album) => {
-                  setCurrentAlbumDetail(album);
-                  setCurrentView('albumDetail');
-                }}
-              />
-            ) : (
-              <MainView
-                onPlayTrack={handlePlayTrack}
-                onPlayStation={handlePlayStation}
-                onAlbumSelected={(album) => {
-                  setCurrentAlbumDetail(album);
-                  setCurrentView('albumDetail');
-                }}
-                onArtistSelected={(artistName) => {
-                  setCurrentArtistName(artistName);
-                  setCurrentView('artistDetail');
-                }}
-              />
-            )}
+{currentView === 'albumDetail' ? (
+            <AlbumDetailView
+              album={currentAlbumDetail}
+              onBack={() => setCurrentView('radioStations')}
+              onPlayTrack={handlePlayTrack}
+            />
+          ) : currentView === 'artistDetail' ? (
+            <ArtistDetailView
+              artistName={currentArtistName}
+              onBack={() => setCurrentView('radioStations')}
+              onPlayTrack={handlePlayTrack}
+              onAlbumSelected={(album) => {
+                setCurrentAlbumDetail(album);
+                setCurrentView('albumDetail');
+              }}
+            />
+          ) : currentView === 'stationDetail' ? (
+            <RadioStationDetailView
+              stationId={currentStationId}
+              onBack={() => setCurrentView('radioStations')}
+            />
+          ) : (
+            <MainView
+              onPlayTrack={handlePlayTrack}
+              onPlayStation={handlePlayStation}
+              onAlbumSelected={(album) => {
+                setCurrentAlbumDetail(album);
+                setCurrentView('albumDetail');
+              }}
+              onArtistSelected={(artistName) => {
+                setCurrentArtistName(artistName);
+                setCurrentView('artistDetail');
+              }}
+              onStationSelected={(stationId) => {
+                setCurrentStationId(stationId);
+                setCurrentView('stationDetail');
+              }}
+            />
+          )}
           </div>
           <PlaybackControls
             currentTrack={currentTrack}
