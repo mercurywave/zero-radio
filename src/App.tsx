@@ -14,7 +14,7 @@ import { RadioStation } from './services/radioStationService'
 const cacheService = MusicCacheService.getInstance();
 
 const App: React.FC = () => {
-const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' | 'albumDetail'>('folderSelect')
+  const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' | 'albumDetail'>('folderSelect')
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentFile, setCurrentFile] = useState(0)
@@ -52,9 +52,10 @@ const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' 
   });
 
   // Handle track playback using PlaybackService
-const handlePlayTrack = async (track: AudioTrack) => {
-    if (track) {
+  const handlePlayTrack = async (entry: MusicLibraryEntry) => {
+    if (entry) {
       try {
+        let track = await MusicCacheService.getInstance().getTrackFromLibraryEntry(entry);
         await playbackService.playSpecificTrack(track);
       } catch (error) {
         console.error('Error playing track:', error);
@@ -128,23 +129,23 @@ const handlePlayTrack = async (track: AudioTrack) => {
     };
   }, [])
 
-return (
+  return (
     <div className="app">
       {currentView === 'folderSelect' ? (
         <FolderSelectView
           onFolderSelected={() => setCurrentView('radioStations')}
         />
       ) : currentView === 'albumDetail' ? (
-        <AlbumDetailView 
-          album={currentAlbumDetail} 
-          onBack={() => setCurrentView('radioStations')} 
+        <AlbumDetailView
+          album={currentAlbumDetail}
+          onBack={() => setCurrentView('radioStations')}
           onPlayTrack={handlePlayTrack}
         />
       ) : (
         <>
-          <MainView 
-            onPlayTrack={handlePlayTrack} 
-            onPlayStation={handlePlayStation} 
+          <MainView
+            onPlayTrack={handlePlayTrack}
+            onPlayStation={handlePlayStation}
             onAlbumSelected={(album) => {
               setCurrentAlbumDetail(album);
               setCurrentView('albumDetail');

@@ -51,7 +51,7 @@ const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack, onPlay
       <div className="album-content">
         <div className="album-art-container">
           {albumArt ? (
-            <img src={albumArt} alt={`${album.albumName} album art`} className="album-art" />
+            <img src={albumArt} alt={`${album.albumName} album art`} className="album-detail-art" />
           ) : (
             <div className="album-art-placeholder">
               <span className="album-icon">📀</span>
