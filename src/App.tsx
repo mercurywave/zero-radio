@@ -136,23 +136,25 @@ const App: React.FC = () => {
           onFolderSelected={() => setCurrentView('radioStations')}
         />
       ) : (
-        <>
-          {currentView === 'albumDetail' ? (
-            <AlbumDetailView
-              album={currentAlbumDetail}
-              onBack={() => setCurrentView('radioStations')}
-              onPlayTrack={handlePlayTrack}
-            />
-          ) : (
-            <MainView
-              onPlayTrack={handlePlayTrack}
-              onPlayStation={handlePlayStation}
-              onAlbumSelected={(album) => {
-                setCurrentAlbumDetail(album);
-                setCurrentView('albumDetail');
-              }}
-            />
-          )}
+        <div className="scrollable-content-wrapper">
+          <div className="scrollable-content">
+            {currentView === 'albumDetail' ? (
+              <AlbumDetailView
+                album={currentAlbumDetail}
+                onBack={() => setCurrentView('radioStations')}
+                onPlayTrack={handlePlayTrack}
+              />
+            ) : (
+              <MainView
+                onPlayTrack={handlePlayTrack}
+                onPlayStation={handlePlayStation}
+                onAlbumSelected={(album) => {
+                  setCurrentAlbumDetail(album);
+                  setCurrentView('albumDetail');
+                }}
+              />
+            )}
+          </div>
           <PlaybackControls
             currentTrack={currentTrack}
             isPlaying={playbackState.isPlaying}
@@ -174,7 +176,7 @@ const App: React.FC = () => {
               }
             }}
           />
-        </>
+        </div>
       )}
       <ProgressPopover
         isVisible={isProcessing}
@@ -185,6 +187,5 @@ const App: React.FC = () => {
     </div>
   )
 }
-
 
 export default App

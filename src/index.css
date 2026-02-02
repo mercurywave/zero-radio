@@ -17,6 +17,16 @@ body {
   flex-direction: column;
 }
 
+.scrollable-content-wrapper {
+  position: relative;
+  overflow-y: hidden;
+}
+.scrollable-content {
+  position: relative;
+  height: calc(100vh - 110px);
+  overflow-y: auto;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .radio-station-grid {
