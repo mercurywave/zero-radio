@@ -10,9 +10,10 @@ interface MainViewProps {
   onPlayTrack?: (track: AudioTrack) => void;
   onPlayStation?: (station: RadioStation, leadTrack?: MusicLibraryEntry) => void;
   onAlbumSelected?: (album: any) => void;
+  onArtistSelected?: (artistName: string) => void;
 }
 
-const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbumSelected }) => {
+const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbumSelected, onArtistSelected }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -77,7 +78,6 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
   }, [searchQuery]);
 
 
-
   return (
     <div className="radio-stations-view">
       <SearchView
@@ -88,6 +88,7 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
         onPlayTrack={onPlayTrack}
         onPlayStation={onPlayStation}
         onAlbumSelected={onAlbumSelected}
+        onArtistSelected={onArtistSelected}
       />
 
       {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}

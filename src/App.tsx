@@ -4,6 +4,7 @@ import ProgressPopover from './components/ProgressPopover'
 import FolderSelectView from './components/FolderSelectView'
 import MainView from './components/MainView'
 import AlbumDetailView from './components/AlbumDetailView'
+import ArtistDetailView from './components/ArtistDetailView'
 import PlaybackControls from './components/PlaybackControls'
 import './index.css'
 import './components/ProgressPopover.css'
@@ -14,7 +15,7 @@ import { RadioStation } from './services/radioStationService'
 const cacheService = MusicCacheService.getInstance();
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' | 'albumDetail'>('folderSelect')
+  const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' | 'albumDetail' | 'artistDetail'>('folderSelect')
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentFile, setCurrentFile] = useState(0)
@@ -41,6 +42,9 @@ const App: React.FC = () => {
 
   // Album detail view state
   const [currentAlbumDetail, setCurrentAlbumDetail] = useState<any>(null)
+  
+  // Artist detail view state
+  const [currentArtistName, setCurrentArtistName] = useState<string>('')
 
   // Set up progress tracking - pass a callback function that updates our local state
   cacheService.setOnProgress((current, total) => {
@@ -144,6 +148,16 @@ const App: React.FC = () => {
                 onBack={() => setCurrentView('radioStations')}
                 onPlayTrack={handlePlayTrack}
               />
+            ) : currentView === 'artistDetail' ? (
+              <ArtistDetailView
+                artistName={currentArtistName}
+                onBack={() => setCurrentView('radioStations')}
+                onPlayTrack={handlePlayTrack}
+                onAlbumSelected={(album) => {
+                  setCurrentAlbumDetail(album);
+                  setCurrentView('albumDetail');
+                }}
+              />
             ) : (
               <MainView
                 onPlayTrack={handlePlayTrack}
@@ -151,6 +165,10 @@ const App: React.FC = () => {
                 onAlbumSelected={(album) => {
                   setCurrentAlbumDetail(album);
                   setCurrentView('albumDetail');
+                }}
+                onArtistSelected={(artistName) => {
+                  setCurrentArtistName(artistName);
+                  setCurrentView('artistDetail');
                 }}
               />
             )}

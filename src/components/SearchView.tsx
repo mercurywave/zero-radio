@@ -109,6 +109,7 @@ interface SearchViewProps {
   onPlayTrack?: ((track: AudioTrack) => void) | undefined;
   onPlayStation?: ((station: RadioStation, leadTrack: MusicLibraryEntry) => void) | undefined;
   onAlbumSelected?: ((album: any) => void) | undefined;
+  onArtistSelected?: ((artistName: string) => void) | undefined;
 }
 
 const SearchView: React.FC<SearchViewProps> = ({
@@ -118,7 +119,8 @@ const SearchView: React.FC<SearchViewProps> = ({
   isSearching,
   onPlayTrack,
   onPlayStation,
-  onAlbumSelected
+  onAlbumSelected,
+  onArtistSelected
 }) => {
   return (
     <div className="search-wrapper">
@@ -184,9 +186,13 @@ const SearchView: React.FC<SearchViewProps> = ({
                     </div>
                   );
 
-                case 'artist':
+case 'artist':
                   return (
-                    <div key={index} className="search-result-item artist-result">
+                    <div 
+                      key={index} 
+                      className="search-result-item artist-result"
+                      onClick={() => onArtistSelected && onArtistSelected(result.artistName)}
+                    >
                       <div className="result-image-placeholder">
                         <span className="station-icon">👤</span>
                       </div>
@@ -197,14 +203,15 @@ const SearchView: React.FC<SearchViewProps> = ({
                       {onPlayStation && (
                         <button
                           className="play-btn"
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation(); // Prevents the artist card click from firing
                             let station = await radioStationService
                               .createArtistStation(result.artistName, result.tracks);
                             const randomIndex = Math.floor(Math.random() * result.tracks.length);
                             let track = result.tracks[randomIndex]!;
                             onPlayStation(station, track);
                           }}
-                          title="Play track"
+                          title="Play artist"
                         >
                           ▶
                         </button>
@@ -212,7 +219,7 @@ const SearchView: React.FC<SearchViewProps> = ({
                     </div>
                   );
 
-case 'album':
+                case 'album':
                   return (
                     <div 
                       key={index} 
