@@ -66,7 +66,6 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
 
     const performSearchWrapper = async () => {
       await performSearch(
-        cacheService,
         searchQuery,
         setSearchResults,
         setIsSearching
