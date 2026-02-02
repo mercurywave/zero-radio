@@ -108,6 +108,7 @@ interface SearchViewProps {
   isSearching: boolean;
   onPlayTrack?: ((track: AudioTrack) => void) | undefined;
   onPlayStation?: ((station: RadioStation, leadTrack: MusicLibraryEntry) => void) | undefined;
+  onAlbumSelected?: ((album: any) => void) | undefined;
 }
 
 const SearchView: React.FC<SearchViewProps> = ({
@@ -116,7 +117,8 @@ const SearchView: React.FC<SearchViewProps> = ({
   searchResults,
   isSearching,
   onPlayTrack,
-  onPlayStation
+  onPlayStation,
+  onAlbumSelected
 }) => {
   return (
     <div className="search-wrapper">
@@ -210,9 +212,13 @@ const SearchView: React.FC<SearchViewProps> = ({
                     </div>
                   );
 
-                case 'album':
+case 'album':
                   return (
-                    <div key={index} className="search-result-item album-result">
+                    <div 
+                      key={index} 
+                      className="search-result-item album-result"
+                      onClick={() => onAlbumSelected && onAlbumSelected(result)}
+                    >
                       <div className={"result-image-placeholder"}>
                         {result.albumArt ? (
                           <img src={result.albumArt} alt={`${result.albumName} album art`} className="result-art" />
@@ -228,7 +234,8 @@ const SearchView: React.FC<SearchViewProps> = ({
                       {onPlayStation && (
                         <button
                           className="play-btn"
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation(); // Prevents the album click from firing
                             let station = await radioStationService
                               .createAlbumStation(result.artistName, result.albumName, result.tracks);
                             const randomIndex = Math.floor(Math.random() * result.tracks.length);

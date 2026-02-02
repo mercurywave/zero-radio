@@ -3,6 +3,7 @@ import { AudioTrack, MusicCacheService, MusicLibraryEntry } from './services/mus
 import ProgressPopover from './components/ProgressPopover'
 import FolderSelectView from './components/FolderSelectView'
 import MainView from './components/MainView'
+import AlbumDetailView from './components/AlbumDetailView'
 import PlaybackControls from './components/PlaybackControls'
 import './index.css'
 import './components/ProgressPopover.css'
@@ -13,7 +14,7 @@ import { RadioStation } from './services/radioStationService'
 const cacheService = MusicCacheService.getInstance();
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations'>('folderSelect')
+const [currentView, setCurrentView] = useState<'folderSelect' | 'radioStations' | 'albumDetail'>('folderSelect')
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentFile, setCurrentFile] = useState(0)
@@ -38,6 +39,9 @@ const App: React.FC = () => {
   const [currentArtist, setCurrentArtist] = useState<string>('')
   const [currentAlbum, setCurrentAlbum] = useState<string>('')
 
+  // Album detail view state
+  const [currentAlbumDetail, setCurrentAlbumDetail] = useState<any>(null)
+
   // Set up progress tracking - pass a callback function that updates our local state
   cacheService.setOnProgress((current, total) => {
     let progress = ((current + 1) / total) * 100;
@@ -48,7 +52,7 @@ const App: React.FC = () => {
   });
 
   // Handle track playback using PlaybackService
-  const handlePlayTrack = async (track: AudioTrack | null) => {
+const handlePlayTrack = async (track: AudioTrack) => {
     if (track) {
       try {
         await playbackService.playSpecificTrack(track);
@@ -124,15 +128,28 @@ const App: React.FC = () => {
     };
   }, [])
 
-  return (
+return (
     <div className="app">
       {currentView === 'folderSelect' ? (
         <FolderSelectView
           onFolderSelected={() => setCurrentView('radioStations')}
         />
+      ) : currentView === 'albumDetail' ? (
+        <AlbumDetailView 
+          album={currentAlbumDetail} 
+          onBack={() => setCurrentView('radioStations')} 
+          onPlayTrack={handlePlayTrack}
+        />
       ) : (
         <>
-          <MainView onPlayTrack={handlePlayTrack} onPlayStation={handlePlayStation} />
+          <MainView 
+            onPlayTrack={handlePlayTrack} 
+            onPlayStation={handlePlayStation} 
+            onAlbumSelected={(album) => {
+              setCurrentAlbumDetail(album);
+              setCurrentView('albumDetail');
+            }}
+          />
           <PlaybackControls
             currentTrack={currentTrack}
             isPlaying={playbackState.isPlaying}

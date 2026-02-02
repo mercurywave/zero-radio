@@ -1,0 +1,172 @@
+/** Album detail view styles */
+.album-detail-view {
+  padding: 20px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  background-color: #121212;
+  color: white;
+}
+
+.album-header {
+  margin-bottom: 30px;
+  text-align: center;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: none;
+  border: none;
+  color: #4caf50;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+
+.back-button:hover {
+  color: #45a049;
+}
+
+.album-header h1 {
+  margin: 20px 0 5px 0;
+  font-size: 2rem;
+}
+
+.album-artist {
+  margin: 0 0 20px 0;
+  color: #aaa;
+  font-size: 1.2rem;
+}
+
+.album-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.album-art-container {
+  width: 250px;
+  height: 250px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.album-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.album-art-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #2d2d2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+}
+
+.album-info {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.album-stats p {
+  margin: 0 0 15px 0;
+  color: #ccc;
+  font-size: 1.1rem;
+}
+
+.play-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 20px;
+}
+
+.play-button:hover {
+  background-color: #45a049;
+}
+
+.track-list h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #4caf50;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+.track-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: #1e1e1e;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.track-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.track-number {
+  width: 30px;
+  margin-right: 15px;
+  color: #aaa;
+}
+
+.track-info {
+  flex: 1;
+}
+
+.track-info h4 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.track-artist {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.track-duration {
+  margin-right: 15px;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.play-track-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.play-track-btn:hover {
+  background-color: #45a049;
+}

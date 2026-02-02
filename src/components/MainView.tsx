@@ -9,9 +9,10 @@ const cacheService = MusicCacheService.getInstance();
 interface MainViewProps {
   onPlayTrack?: (track: AudioTrack) => void;
   onPlayStation?: (station: RadioStation, leadTrack?: MusicLibraryEntry) => void;
+  onAlbumSelected?: (album: any) => void;
 }
 
-const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation }) => {
+const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbumSelected }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -86,6 +87,7 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation }) => {
         isSearching={isSearching}
         onPlayTrack={onPlayTrack}
         onPlayStation={onPlayStation}
+        onAlbumSelected={onAlbumSelected}
       />
 
       {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
