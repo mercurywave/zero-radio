@@ -85,14 +85,6 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
               )}
             </div>
           </div>
-          
-          <div className="radio-station-stats">
-            {station.criteria && station.criteria.length > 0 ? (
-              <p>{station.criteria.length} criteria</p>
-            ) : (
-              <p>No criteria defined</p>
-            )}
-          </div>
         </div>
 
         <div className="radio-station-description-column">
