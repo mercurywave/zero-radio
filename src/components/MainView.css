@@ -1,7 +1,6 @@
 /** Radio station view styles */
 .radio-stations-view {
   padding: 20px;
-  height: calc(100vh - 80px);
 }
 
 .radio-stations-view h2 {

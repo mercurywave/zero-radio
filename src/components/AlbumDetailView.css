@@ -1,7 +1,6 @@
 /** Album detail view styles */
 .album-detail-view {
   padding: 20px;
-  height: calc(100vh - 80px);
   background-color: #121212;
   color: white;
 }
