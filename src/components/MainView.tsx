@@ -79,28 +79,24 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
   }, [searchQuery]);
 
 
-return (
-      <div className="radio-stations-view">
-        <div className="main-view-header">
-          <button className="create-station-button" onClick={onCreateNewStation}>
-            + New Station
-          </button>
-        </div>
-        <SearchView
-          onSearchQueryChange={setSearchQuery}
-          searchQuery={searchQuery}
-          searchResults={searchResults}
-          isSearching={isSearching}
-          onPlayTrack={onPlayTrack}
-          onPlayStation={onPlayStation}
-          onAlbumSelected={onAlbumSelected}
-          onArtistSelected={onArtistSelected}
-          onStationSelected={onStationSelected}
-        />
+  return (
+    <div className="radio-stations-view">
+      <SearchView
+        onSearchQueryChange={setSearchQuery}
+        searchQuery={searchQuery}
+        searchResults={searchResults}
+        isSearching={isSearching}
+        onPlayTrack={onPlayTrack}
+        onPlayStation={onPlayStation}
+        onAlbumSelected={onAlbumSelected}
+        onArtistSelected={onArtistSelected}
+        onStationSelected={onStationSelected}
+        onCreateNewStation={onCreateNewStation}
+      />
 
-       {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
-     </div>
-   )
+      {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
+    </div>
+  )
 }
 
 // Render radio station tiles when no search query
@@ -112,18 +108,18 @@ const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation }
         <h3>Suggested Stations</h3>
       </div>
       <div className="radio-station-grid">
-          {suggestedStations.map((station) => (
-            <div
-              key={station.id}
-              className="radio-station-card"
-              onClick={() => onPlayStation && onPlayStation(station)}
-            >
-              {station.imagePath && (
-                <img src={station.imagePath} alt={station.name} className="station-image" />
-              )}
-              <div className="station-label">{station.name.toUpperCase()}</div>
-            </div>
-          ))}
+        {suggestedStations.map((station) => (
+          <div
+            key={station.id}
+            className="radio-station-card"
+            onClick={() => onPlayStation && onPlayStation(station)}
+          >
+            {station.imagePath && (
+              <img src={station.imagePath} alt={station.name} className="station-image" />
+            )}
+            <div className="station-label">{station.name.toUpperCase()}</div>
+          </div>
+        ))}
       </div>
 
       {/* Recent Stations */}
@@ -131,18 +127,18 @@ const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation }
         <h3>Recently Played</h3>
       </div>
       <div className="radio-station-grid">
-          {recentStations.map((station) => (
-            <div
-              key={station.id}
-              className="radio-station-card"
-              onClick={() => onPlayStation && onPlayStation(station)}
-            >
-              {station.imagePath && (
-                <img src={station.imagePath} alt={station.name} className="station-image" />
-              )}
-              <div className="station-label">{station.name.toUpperCase()}</div>
-            </div>
-          ))}
+        {recentStations.map((station) => (
+          <div
+            key={station.id}
+            className="radio-station-card"
+            onClick={() => onPlayStation && onPlayStation(station)}
+          >
+            {station.imagePath && (
+              <img src={station.imagePath} alt={station.name} className="station-image" />
+            )}
+            <div className="station-label">{station.name.toUpperCase()}</div>
+          </div>
+        ))}
       </div>
     </>
   );

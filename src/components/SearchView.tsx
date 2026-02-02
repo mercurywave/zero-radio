@@ -38,6 +38,7 @@ interface SearchViewProps {
   onAlbumSelected?: ((album: any) => void) | undefined;
   onArtistSelected?: ((artistName: string) => void) | undefined;
   onStationSelected?: ((stationId: string) => void) | undefined;
+  onCreateNewStation?: (() => void) | undefined;
 }
 
 const SearchView: React.FC<SearchViewProps> = ({
@@ -49,12 +50,16 @@ const SearchView: React.FC<SearchViewProps> = ({
   onPlayStation,
   onAlbumSelected,
   onArtistSelected,
-  onStationSelected
+  onStationSelected,
+  onCreateNewStation
 }) => {
   return (
     <div className="search-wrapper">
       {/* Search bar at top middle */}
-      <div className="search-container">
+        <div className="search-container">
+        <button className="create-station-button" onClick={onCreateNewStation}>
+          +Station
+        </button>
         <div className="search-input-wrapper">
           <input
             type="text"

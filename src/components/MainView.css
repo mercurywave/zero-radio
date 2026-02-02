@@ -3,27 +3,6 @@
   padding: 20px;
 }
 
-.main-view-header {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 20px;
-}
-
-.create-station-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-}
-
-.create-station-button:hover {
-  background-color: #45a049;
-}
-
 .radio-stations-view h2 {
   margin-top: 0;
   color: #4caf50;

@@ -43,10 +43,10 @@ const App: React.FC = () => {
 
   // Album detail view state
   const [currentAlbumDetail, setCurrentAlbumDetail] = useState<any>(null)
-  
+
   // Artist detail view state
   const [currentArtistName, setCurrentArtistName] = useState<string>('')
-  
+
   // Station detail view state
   const [currentStationId, setCurrentStationId] = useState<string>('')
 
@@ -57,12 +57,12 @@ const App: React.FC = () => {
       if (allTracks.length > 0) {
         // Create a temporary station from all tracks in the library
         const newStation = await radioStationService.createStationFromTracks(
-          "My New Station", 
-          allTracks, 
-          undefined, 
+          "My New Station",
+          allTracks,
+          undefined,
           true
         );
-        
+
         // Set the station ID for display and navigate to detail view
         setCurrentStationId(newStation.id);
         setCurrentView('stationDetail');
@@ -168,49 +168,49 @@ const App: React.FC = () => {
       ) : (
         <div className="scrollable-content-wrapper">
           <div className="scrollable-content">
-{currentView === 'albumDetail' ? (
-            <AlbumDetailView
-              album={currentAlbumDetail}
-              onBack={() => setCurrentView('radioStations')}
-              onPlayTrack={handlePlayTrack}
-            />
-          ) : currentView === 'artistDetail' ? (
-            <ArtistDetailView
-              artistName={currentArtistName}
-              onBack={() => setCurrentView('radioStations')}
-              onPlayTrack={handlePlayTrack}
-              onAlbumSelected={(album) => {
-                setCurrentAlbumDetail(album);
-                setCurrentView('albumDetail');
-              }}
-            />
-          ) : currentView === 'stationDetail' ? (
-            <RadioStationDetailView
-              stationId={currentStationId}
-              onBack={() => setCurrentView('radioStations')}
-            />
-          ) : (
-            <MainView
-              onPlayTrack={handlePlayTrack}
-              onPlayStation={handlePlayStation}
-              onAlbumSelected={(album) => {
-                setCurrentAlbumDetail(album);
-                setCurrentView('albumDetail');
-              }}
-              onArtistSelected={(artistName) => {
-                setCurrentArtistName(artistName);
-                setCurrentView('artistDetail');
-              }}
-              onStationSelected={(stationId) => {
-                setCurrentStationId(stationId);
-                setCurrentView('stationDetail');
-              }}
-              onCreateNewStation={() => {
-                // Create a temporary station and navigate to it
-                createTemporaryStation();
-              }}
-            />
-          )}
+            {currentView === 'albumDetail' ? (
+              <AlbumDetailView
+                album={currentAlbumDetail}
+                onBack={() => setCurrentView('radioStations')}
+                onPlayTrack={handlePlayTrack}
+              />
+            ) : currentView === 'artistDetail' ? (
+              <ArtistDetailView
+                artistName={currentArtistName}
+                onBack={() => setCurrentView('radioStations')}
+                onPlayTrack={handlePlayTrack}
+                onAlbumSelected={(album) => {
+                  setCurrentAlbumDetail(album);
+                  setCurrentView('albumDetail');
+                }}
+              />
+            ) : currentView === 'stationDetail' ? (
+              <RadioStationDetailView
+                stationId={currentStationId}
+                onBack={() => setCurrentView('radioStations')}
+              />
+            ) : (
+              <MainView
+                onPlayTrack={handlePlayTrack}
+                onPlayStation={handlePlayStation}
+                onAlbumSelected={(album) => {
+                  setCurrentAlbumDetail(album);
+                  setCurrentView('albumDetail');
+                }}
+                onArtistSelected={(artistName) => {
+                  setCurrentArtistName(artistName);
+                  setCurrentView('artistDetail');
+                }}
+                onStationSelected={(stationId) => {
+                  setCurrentStationId(stationId);
+                  setCurrentView('stationDetail');
+                }}
+                onCreateNewStation={() => {
+                  // Create a temporary station and navigate to it
+                  createTemporaryStation();
+                }}
+              />
+            )}
           </div>
           <PlaybackControls
             currentTrack={currentTrack}
