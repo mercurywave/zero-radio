@@ -135,22 +135,24 @@ const App: React.FC = () => {
         <FolderSelectView
           onFolderSelected={() => setCurrentView('radioStations')}
         />
-      ) : currentView === 'albumDetail' ? (
-        <AlbumDetailView
-          album={currentAlbumDetail}
-          onBack={() => setCurrentView('radioStations')}
-          onPlayTrack={handlePlayTrack}
-        />
       ) : (
         <>
-          <MainView
-            onPlayTrack={handlePlayTrack}
-            onPlayStation={handlePlayStation}
-            onAlbumSelected={(album) => {
-              setCurrentAlbumDetail(album);
-              setCurrentView('albumDetail');
-            }}
-          />
+          {currentView === 'albumDetail' ? (
+            <AlbumDetailView
+              album={currentAlbumDetail}
+              onBack={() => setCurrentView('radioStations')}
+              onPlayTrack={handlePlayTrack}
+            />
+          ) : (
+            <MainView
+              onPlayTrack={handlePlayTrack}
+              onPlayStation={handlePlayStation}
+              onAlbumSelected={(album) => {
+                setCurrentAlbumDetail(album);
+                setCurrentView('albumDetail');
+              }}
+            />
+          )}
           <PlaybackControls
             currentTrack={currentTrack}
             isPlaying={playbackState.isPlaying}
