@@ -11,7 +11,7 @@ import './index.css'
 import './components/ProgressPopover.css'
 import { tryUseCachedFolder } from './utils/fileHelpers'
 import { playbackService, PlaybackState } from './services/playbackService'
-import { RadioStation } from './services/radioStationService'
+import { RadioStation, radioStationService } from './services/radioStationService'
 
 const cacheService = MusicCacheService.getInstance();
 
@@ -49,6 +49,28 @@ const App: React.FC = () => {
   
   // Station detail view state
   const [currentStationId, setCurrentStationId] = useState<string>('')
+
+  // Create a temporary station from all music library entries
+  const createTemporaryStation = async () => {
+    try {
+      const allTracks = await cacheService.getAllCachedEntries();
+      if (allTracks.length > 0) {
+        // Create a temporary station from all tracks in the library
+        const newStation = await radioStationService.createStationFromTracks(
+          "My New Station", 
+          allTracks, 
+          undefined, 
+          true
+        );
+        
+        // Set the station ID for display and navigate to detail view
+        setCurrentStationId(newStation.id);
+        setCurrentView('stationDetail');
+      }
+    } catch (error) {
+      console.error('Error creating temporary station:', error);
+    }
+  };
 
   // Set up progress tracking - pass a callback function that updates our local state
   cacheService.setOnProgress((current, total) => {
@@ -182,6 +204,10 @@ const App: React.FC = () => {
               onStationSelected={(stationId) => {
                 setCurrentStationId(stationId);
                 setCurrentView('stationDetail');
+              }}
+              onCreateNewStation={() => {
+                // Create a temporary station and navigate to it
+                createTemporaryStation();
               }}
             />
           )}

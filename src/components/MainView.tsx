@@ -12,9 +12,10 @@ interface MainViewProps {
   onAlbumSelected?: (album: any) => void;
   onArtistSelected?: (artistName: string) => void;
   onStationSelected?: (stationId: string) => void;
+  onCreateNewStation?: () => void;
 }
 
-const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbumSelected, onArtistSelected, onStationSelected }) => {
+const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbumSelected, onArtistSelected, onStationSelected, onCreateNewStation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -79,22 +80,27 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
 
 
 return (
-     <div className="radio-stations-view">
-       <SearchView
-         onSearchQueryChange={setSearchQuery}
-         searchQuery={searchQuery}
-         searchResults={searchResults}
-         isSearching={isSearching}
-         onPlayTrack={onPlayTrack}
-         onPlayStation={onPlayStation}
-         onAlbumSelected={onAlbumSelected}
-         onArtistSelected={onArtistSelected}
-         onStationSelected={onStationSelected}
-       />
+      <div className="radio-stations-view">
+        <div className="main-view-header">
+          <button className="create-station-button" onClick={onCreateNewStation}>
+            + New Station
+          </button>
+        </div>
+        <SearchView
+          onSearchQueryChange={setSearchQuery}
+          searchQuery={searchQuery}
+          searchResults={searchResults}
+          isSearching={isSearching}
+          onPlayTrack={onPlayTrack}
+          onPlayStation={onPlayStation}
+          onAlbumSelected={onAlbumSelected}
+          onArtistSelected={onArtistSelected}
+          onStationSelected={onStationSelected}
+        />
 
-      {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
-    </div>
-  )
+       {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
+     </div>
+   )
 }
 
 // Render radio station tiles when no search query

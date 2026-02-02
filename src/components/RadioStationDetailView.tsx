@@ -11,6 +11,8 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
   const [station, setStation] = useState<RadioStation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
 
   useEffect(() => {
     const fetchStationDetails = async () => {
@@ -18,6 +20,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
         const fetchedStation = await radioStationService.getStationById(stationId);
         if (fetchedStation) {
           setStation(fetchedStation);
+          setEditedName(fetchedStation.name);
         } else {
           setError('Station not found');
         }
@@ -31,6 +34,18 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
 
     fetchStationDetails();
   }, [stationId]);
+
+  const handleSaveName = async () => {
+    if (!station || editedName.trim() === '') return;
+    
+    try {
+      const updatedStation = await radioStationService.updateStation(station, { name: editedName });
+      setStation(updatedStation);
+      setIsEditingName(false);
+    } catch (err) {
+      console.error('Error updating station name:', err);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -70,7 +85,20 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
         <button className="back-button" onClick={onBack}>
           ← Back
         </button>
-        <h1>{station.name}</h1>
+        {isEditingName ? (
+          <div className="edit-name-container">
+            <input 
+              type="text" 
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              className="edit-name-input"
+              autoFocus
+            />
+            <button onClick={handleSaveName} className="save-name-button">Save</button>
+          </div>
+        ) : (
+          <h1>{station.name}</h1>
+        )}
         <p className="radio-station-type">Radio Station</p>
       </div>
 
@@ -106,6 +134,18 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+          
+          {/* Show edit button for temporary stations only */}
+          {station.isTemporary && (
+            <div className="edit-name-section">
+              <button 
+                onClick={() => setIsEditingName(true)} 
+                className="edit-name-button"
+              >
+                Edit Name
+              </button>
             </div>
           )}
         </div>

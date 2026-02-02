@@ -246,8 +246,9 @@ async function findSearchResults(searchQuery: string) {
 
   // Get radio stations and filter by search query
   const allStations = await radioStationService.getAllStations();
-  const stationResults = allStations.filter(station => station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (station.description && station.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  const stationResults = allStations.filter(station => !station.isTemporary)
+    .filter(station => station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (station.description && station.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Add station results

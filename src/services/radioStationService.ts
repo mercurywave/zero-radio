@@ -51,9 +51,7 @@ export class RadioStationService {
       imagePath: station?.imagePath,
     };
 
-    if (!isTemporary) {
-      await this.storeStation(newStation);
-    }
+    await this.storeStation(newStation);
     return newStation;
   }
 
@@ -77,9 +75,7 @@ export class RadioStationService {
       imagePath: updates.imagePath || station.imagePath,
     };
 
-    if (!isTemporary) {
-      await this.storeStation(updatedStation);
-    }
+    await this.storeStation(updatedStation);
     return updatedStation;
   }
 
@@ -336,11 +332,6 @@ export class RadioStationService {
    * Store a radio station in the database
    */
   private async storeStation(station: RadioStation): Promise<void> {
-    // Don't store temporary stations
-    if (station.isTemporary) {
-      return;
-    }
-
     const db = (MusicCacheService.getInstance() as any).db;
     if (!db) {
       throw new Error('Database not initialized');
@@ -438,9 +429,7 @@ export class RadioStationService {
     station.updatedAt = new Date();
     station.criteria = averagedCriteria.filter(c => c.weight > 0);
 
-    if (!station.isTemporary) {
-      await this.storeStation(station);
-    }
+    await this.storeStation(station);
   }
 
   /**

@@ -21,6 +21,36 @@
   font-size: 1.2rem;
 }
 
+.edit-name-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.edit-name-input {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.save-name-button {
+  padding: 8px 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.save-name-button:hover {
+  background-color: #45a049;
+}
+
 .radio-station-content-wrapper {
   display: flex;
   flex: 1;
@@ -113,6 +143,25 @@
 
 .radio-station-criteria li:last-child {
   border-bottom: none;
+}
+
+.edit-name-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.edit-name-button {
+  padding: 8px 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.edit-name-button:hover {
+  background-color: #45a049;
 }
 
 @media (max-width: 768px) {
