@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { AudioTrack, MusicCacheService, MusicLibraryEntry } from './services/musicCacheService'
 import ProgressPopover from './components/ProgressPopover'
 import FolderSelectView from './components/FolderSelectView'
-import RadioStationView from './components/RadioStationView'
+import MainView from './components/MainView'
 import PlaybackControls from './components/PlaybackControls'
 import './index.css'
 import './components/ProgressPopover.css'
@@ -132,7 +132,7 @@ const App: React.FC = () => {
         />
       ) : (
         <>
-          <RadioStationView onPlayTrack={handlePlayTrack} onPlayStation={handlePlayStation} />
+          <MainView onPlayTrack={handlePlayTrack} onPlayStation={handlePlayStation} />
           <PlaybackControls
             currentTrack={currentTrack}
             isPlaying={playbackState.isPlaying}

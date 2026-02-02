@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import SearchView, { performSearch } from './SearchView';
 import { AudioTrack, MusicCacheService, MusicLibraryEntry, SearchResult } from '../services/musicCacheService';
-import './RadioStationView.css';
+import './MainView.css';
 import { RadioStation, radioStationService } from '../services/radioStationService';
 
 const cacheService = MusicCacheService.getInstance();
 
-interface RadioStationViewProps {
+interface MainViewProps {
   onPlayTrack?: (track: AudioTrack) => void;
   onPlayStation?: (station: RadioStation, leadTrack?: MusicLibraryEntry) => void;
 }
 
-const RadioStationView: React.FC<RadioStationViewProps> = ({ onPlayTrack, onPlayStation }) => {
+const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -138,4 +138,4 @@ const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation }
   );
 };
 
-export default RadioStationView;
+export default MainView;
