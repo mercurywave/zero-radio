@@ -124,22 +124,17 @@ const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({ artistName, onBack,
               <p>No albums found for this artist.</p>
             ) : (
               albums.map((album, index) => (
-                <div key={index} className="track-item album-item">
+                <div 
+                  key={index} 
+                  className="track-item album-item"
+                  onClick={() => handleViewAlbum(album)}
+                >
                   <div className="track-number">{index + 1}</div>
                   <div className="track-info">
                     <h4>{album.albumName}</h4>
                     <p className="track-artist">{album.trackCount} tracks</p>
                   </div>
                   <div className="track-duration"></div>
-                  {onAlbumSelected && (
-                    <button
-                      className="play-track-btn"
-                      onClick={() => handleViewAlbum(album)}
-                      title="View album"
-                    >
-                      View
-                    </button>
-                  )}
                 </div>
               ))
             )}
