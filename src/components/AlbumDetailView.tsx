@@ -48,18 +48,18 @@ const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack, onPlay
         <p className="album-artist">by {album.artistName}</p>
       </div>
 
-      <div className="album-content">
-        <div className="album-art-container">
-          {albumArt ? (
-            <img src={albumArt} alt={`${album.albumName} album art`} className="album-detail-art" />
-          ) : (
-            <div className="album-art-placeholder">
-              <span className="album-icon">📀</span>
-            </div>
-          )}
-        </div>
-
-        <div className="album-info">
+      <div className="album-content-wrapper">
+        <div className="album-info-column">
+          <div className="album-art-container">
+            {albumArt ? (
+              <img src={albumArt} alt={`${album.albumName} album art`} className="album-detail-art" />
+            ) : (
+              <div className="album-art-placeholder">
+                <span className="album-icon">📀</span>
+              </div>
+            )}
+          </div>
+          
           <div className="album-stats">
             <p>{album.trackCount} tracks</p>
           </div>
@@ -68,29 +68,31 @@ const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({ album, onBack, onPlay
             ▶ Play Album
           </button>
         </div>
-      </div>
 
-      <div className="track-list">
-        <h2>Track List</h2>
-        {album.tracks && album.tracks.map((track: MusicLibraryEntry, index: number) => (
-          <div key={track.id} className="track-item">
-            <div className="track-number">{index + 1}</div>
-            <div className="track-info">
-              <h4>{track.title}</h4>
-              <p className="track-artist">{track.artist}</p>
-            </div>
-            <div className="track-duration">{track.duration ? formatDuration(track.duration) : '0:00'}</div>
-            {onPlayTrack && (
-              <button
-                className="play-track-btn"
-                onClick={() => onPlayTrack(track)}
-                title="Play track"
-              >
-                ▶
-              </button>
-            )}
+        <div className="track-list-column">
+          <div className="track-list">
+            <h2>Track List</h2>
+            {album.tracks && album.tracks.map((track: MusicLibraryEntry, index: number) => (
+              <div key={track.id} className="track-item">
+                <div className="track-number">{index + 1}</div>
+                <div className="track-info">
+                  <h4>{track.title}</h4>
+                  <p className="track-artist">{track.artist}</p>
+                </div>
+                <div className="track-duration">{track.duration ? formatDuration(track.duration) : '0:00'}</div>
+                {onPlayTrack && (
+                  <button
+                    className="play-track-btn"
+                    onClick={() => onPlayTrack(track)}
+                    title="Play track"
+                  >
+                    ▶
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

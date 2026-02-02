@@ -41,11 +41,18 @@
   font-size: 1.2rem;
 }
 
-.album-content {
+.album-content-wrapper {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.album-info-column {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 30px;
+  min-width: 250px;
 }
 
 .album-art-container {
@@ -73,9 +80,9 @@
   font-size: 4rem;
 }
 
-.album-info {
+.album-stats {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .album-stats p {
@@ -98,6 +105,11 @@
 
 .play-button:hover {
   background-color: #45a049;
+}
+
+.track-list-column {
+  flex: 1;
+  min-width: 0;
 }
 
 .track-list h2 {
