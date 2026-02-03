@@ -1,5 +1,6 @@
 import { MusicCacheService, AudioTrack, MusicLibraryEntry } from './musicCacheService';
 import allImageUrl from '../assets/all.jpg';
+import { genreSimilarity } from './id3Service';
 
 
 export interface TrackScore {
@@ -281,14 +282,7 @@ export class RadioStationService {
       case 'album':
         return this.matchString(track.album, criterion.value);
       case 'genre':
-        // Handle comma-separated genres
-        const trackGenres = track.genre.split(',').map(g => g.trim());
-        let maxGenreMatch = 0;
-        for (const genre of trackGenres) {
-          const match = this.matchString(genre, criterion.value);
-          if (match > maxGenreMatch) maxGenreMatch = match;
-        }
-        return maxGenreMatch;
+        return genreSimilarity(track.genre, criterion.value);
       case 'mood':
         return this.matchString(track.mood, criterion.value);
       case 'decade':
