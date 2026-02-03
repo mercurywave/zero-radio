@@ -187,7 +187,8 @@ const SearchView: React.FC<SearchViewProps> = ({
                       {onPlayStation && (
                         <button
                           className="play-btn"
-                          onClick={async () => {
+                          onClick={async e => {
+                            e.stopPropagation(); // Prevents the album click from firing
                             const station = await radioStationService.getStationById(result.stationId);
                             if (station) {
                               const nextTrack = await radioStationService.selectNextTrackForStation(
