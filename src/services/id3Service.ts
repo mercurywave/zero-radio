@@ -177,5 +177,5 @@ function normalizeGenre(genre: string): string {
   };
 
   // Return normalized genre or original if not found
-  return genreMap[lowerGenre] || genre;
+  return genreMap[lowerGenre] || lowerGenre;
 }

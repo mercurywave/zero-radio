@@ -31,7 +31,7 @@ const SearchView: React.FC<SearchViewProps> = ({
   return (
     <div className="search-wrapper">
       {/* Search bar at top middle */}
-        <div className="search-container">
+      <div className="search-container">
         <button className="create-station-button" onClick={onCreateNewStation}>
           +Station
         </button>
@@ -95,10 +95,10 @@ const SearchView: React.FC<SearchViewProps> = ({
                     </div>
                   );
 
-case 'artist':
+                case 'artist':
                   return (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="search-result-item artist-result"
                       onClick={() => onArtistSelected && onArtistSelected(result.artistName)}
                     >
@@ -130,8 +130,8 @@ case 'artist':
 
                 case 'album':
                   return (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="search-result-item album-result"
                       onClick={() => onAlbumSelected && onAlbumSelected(result)}
                     >
@@ -168,8 +168,8 @@ case 'artist':
 
                 case 'station':
                   return (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="search-result-item station-result"
                       onClick={() => onStationSelected && onStationSelected(result.stationId)}
                     >
