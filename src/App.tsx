@@ -53,20 +53,16 @@ const App: React.FC = () => {
   // Create a temporary station from all music library entries
   const createTemporaryStation = async () => {
     try {
-      const allTracks = await cacheService.getAllCachedEntries();
-      if (allTracks.length > 0) {
-        // Create a temporary station from all tracks in the library
-        const newStation = await radioStationService.createStationFromTracks(
-          "My New Station",
-          allTracks,
-          undefined,
-          true
-        );
+      const newStation = await radioStationService.createStationFromTracks(
+        "My New Station",
+        [],
+        undefined,
+        true
+      );
 
-        // Set the station ID for display and navigate to detail view
-        setCurrentStationId(newStation.id);
-        setCurrentView('stationDetail');
-      }
+      // Set the station ID for display and navigate to detail view
+      setCurrentStationId(newStation.id);
+      setCurrentView('stationDetail');
     } catch (error) {
       console.error('Error creating temporary station:', error);
     }
