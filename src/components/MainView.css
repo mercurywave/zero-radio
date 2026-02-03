@@ -35,6 +35,12 @@
   overflow: hidden;
 }
 
+/* Style for station cards without images */
+.radio-station-card:not(:has(.station-image)) {
+  background-color: #333;
+  border: 1px solid #ddd;
+}
+
 .station-image {
   position: absolute;
   top: 0;
