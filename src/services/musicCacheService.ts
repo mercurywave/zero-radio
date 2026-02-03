@@ -716,20 +716,24 @@ export class MusicCacheService {
     });
   }
 
-  /**
+/**
    * Assign images to auto-generated radio stations based on genre
    */
   private async assignImagesToStation(station: RadioStation): Promise<void> {
-    // Define image paths statically - Vite will handle these at build time
-    
-    const images = import.meta.glob('/public/assets/**/*.{jpg,png}', { eager: true });
+    // Import images from src/assets - Vite will handle these properly
+    const images = import.meta.glob('../assets/**/*.{jpg,png}', { eager: true });
     const imagesByGenre = new Map<string, string[]>();
 
-    for(const key of Object.keys(images)){
-      const genre = key.split('/')[3];
-      let fixedPath = key.replace('/public/', '/');
-      if(genre){
-        imagesByGenre.set(genre, [...(imagesByGenre.get(genre) || []), fixedPath]);
+    for(const [key, module] of Object.entries(images)){
+      // Extract genre from path: ../assets/genre/filename.jpg
+      const pathParts = key.split('/');
+      const genre = pathParts[2]; // assets is index 1, genre is index 2
+      
+      // Get the URL from the imported module
+      const imageUrl = (module as { default: string }).default;
+      
+      if(genre && imageUrl){
+        imagesByGenre.set(genre, [...(imagesByGenre.get(genre) || []), imageUrl]);
       }
     }
 
