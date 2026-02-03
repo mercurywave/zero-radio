@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import SearchView, { performSearch } from './SearchView';
+import SearchView from './SearchView';
 import { AudioTrack, MusicCacheService, MusicLibraryEntry, SearchResult } from '../services/musicCacheService';
 import './MainView.css';
 import { RadioStation, radioStationService } from '../services/radioStationService';
+import { performSearch } from '../services/searchService';
 
 const cacheService = MusicCacheService.getInstance();
 
