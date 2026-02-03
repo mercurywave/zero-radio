@@ -53,12 +53,12 @@ const App: React.FC = () => {
   // Create a temporary station from all music library entries
   const createTemporaryStation = async () => {
     try {
-      const newStation = await radioStationService.createStationFromTracks(
-        "My New Station",
-        [],
-        undefined,
-        true
-      );
+      const newStation = await radioStationService.createStation({
+        name: "My new Station",
+        description: undefined,
+        criteria: [],
+        isTemporary: true,
+      });
 
       // Set the station ID for display and navigate to detail view
       setCurrentStationId(newStation.id);
