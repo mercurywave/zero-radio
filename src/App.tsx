@@ -188,6 +188,7 @@ const App: React.FC = () => {
               <RadioStationDetailView
                 stationId={currentStationId}
                 onBack={() => setCurrentView('radioStations')}
+                onPlayStation={handlePlayStation}
               />
             ) : (
               <MainView

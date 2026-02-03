@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { RadioStation, radioStationService } from '../services/radioStationService';
+import { MusicLibraryEntry } from '../services/musicCacheService';
 import './RadioStationDetailView.css';
 
 interface RadioStationDetailViewProps {
   stationId: string;
   onBack: () => void;
+  onPlayStation: (station: RadioStation) => void;
 }
 
-const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ stationId, onBack }) => {
+const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ stationId, onBack, onPlayStation }) => {
   const [station, setStation] = useState<RadioStation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,6 +115,9 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
               )}
             </div>
           </div>
+          <button className="play-button" onClick={() => onPlayStation(station)}>
+            ▶ Play Station
+          </button>
         </div>
 
         <div className="radio-station-description-column">
