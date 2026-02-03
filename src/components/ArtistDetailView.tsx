@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { MusicCacheService, MusicLibraryEntry } from '../services/musicCacheService';
 import './AlbumDetailView.css';
+import { RadioStation, radioStationService } from '../services/radioStationService';
 
 interface ArtistDetailViewProps {
   artistName: string;
   onBack: () => void;
   onPlayTrack?: (track: MusicLibraryEntry) => void;
   onAlbumSelected?: (album: any) => void;
+  onPlayStation: ((station: RadioStation, leadTrack: MusicLibraryEntry) => void) | undefined;
 }
 
-const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({ artistName, onBack, onPlayTrack, onAlbumSelected }) => {
+const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({ artistName, onBack, onPlayTrack, onAlbumSelected, onPlayStation }) => {
   const [albums, setAlbums] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const cacheService = MusicCacheService.getInstance();
@@ -19,13 +21,13 @@ const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({ artistName, onBack,
       try {
         // Get all entries for this artist
         const allEntries = await cacheService.getAllCachedEntries();
-        const artistEntries = allEntries.filter(entry => 
+        const artistEntries = allEntries.filter(entry =>
           entry.artist.toLowerCase() === artistName.toLowerCase()
         );
 
         // Group by album
         const albumMap = new Map<string, MusicLibraryEntry[]>();
-        
+
         artistEntries.forEach(entry => {
           const key = entry.album;
           if (!albumMap.has(key)) {
@@ -109,10 +111,31 @@ const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({ artistName, onBack,
               <span className="album-icon">👤</span>
             </div>
           </div>
-          
+
           <div className="album-stats">
             <p>{albums.length} albums</p>
           </div>
+
+          {onPlayStation && (
+            <button
+              className="play-button"
+              onClick={async (e) => {
+                e.stopPropagation(); // Prevents the artist card click from firing
+                const allEntries = await cacheService.getAllCachedEntries();
+                const artistEntries = allEntries.filter(entry =>
+                  entry.artist.toLowerCase() === artistName.toLowerCase()
+                );
+                let station = await radioStationService
+                  .createArtistStation(artistName, artistEntries);
+                const randomIndex = Math.floor(Math.random() * artistEntries.length);
+                let track = artistEntries[randomIndex]!;
+                onPlayStation(station, track);
+              }}
+              title="Play artist"
+            >
+              ▶ Play Station
+            </button>
+            )}
         </div>
 
         <div className="track-list-column">
@@ -124,8 +147,8 @@ const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({ artistName, onBack,
               <p>No albums found for this artist.</p>
             ) : (
               albums.map((album, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="track-item album-item"
                   onClick={() => handleViewAlbum(album)}
                 >

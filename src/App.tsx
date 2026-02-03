@@ -183,6 +183,7 @@ const App: React.FC = () => {
                   setCurrentAlbumDetail(album);
                   setCurrentView('albumDetail');
                 }}
+                onPlayStation={handlePlayStation}
               />
             ) : currentView === 'stationDetail' ? (
               <RadioStationDetailView
