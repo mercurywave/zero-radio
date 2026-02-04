@@ -1,6 +1,6 @@
 import { extractMetadata, extractAlbumArt } from './metadataService';
 import { scanDirectoryForAudioFiles } from './fileSystemService';
-import { RadioStation, RadioStationAttribute, radioStationService } from './radioStationService';
+import { RadioStation, RadioStationAttribute, RadioStationCriteria, radioStationService } from './radioStationService';
 
 // Define types for our music library entries
 export interface MusicLibraryEntry {
@@ -662,34 +662,34 @@ export class MusicCacheService {
   /**
    * Create criteria array from a group key
    */
-  private createCriteriaFromGroup(attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade' | 'genre+decade', groupKey: string): { attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade'; value: string; weight: number }[] {
-    const criteria: { attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade'; value: string; weight: number }[] = [];
+  private createCriteriaFromGroup(attribute: 'artist' | 'album' | 'genre' | 'mood' | 'decade' | 'genre+decade', groupKey: string): RadioStationCriteria[] {
+    const criteria: RadioStationCriteria[] = [];
 
     switch (attribute) {
       case 'artist':
-        criteria.push({ attribute: 'artist', value: groupKey, weight: 1.0 });
+        criteria.push({ attribute: 'artist', value: groupKey, weight: 1.0, requirement: false });
         break;
       case 'album':
         const [artist, album] = groupKey.split('|');
         if (artist && album) {
-          criteria.push({ attribute: 'artist', value: artist, weight: 0.7 });
-          criteria.push({ attribute: 'album', value: album, weight: 1.0 });
+          criteria.push({ attribute: 'artist', value: artist, weight: 0.7, requirement: false });
+          criteria.push({ attribute: 'album', value: album, weight: 1.0, requirement: false });
         }
         break;
       case 'genre':
-        criteria.push({ attribute: 'genre', value: groupKey, weight: 1.0 });
+        criteria.push({ attribute: 'genre', value: groupKey, weight: 1.0, requirement: false });
         break;
       case 'mood':
-        criteria.push({ attribute: 'mood', value: groupKey, weight: 1.0 });
+        criteria.push({ attribute: 'mood', value: groupKey, weight: 1.0, requirement: false });
         break;
       case 'decade':
-        criteria.push({ attribute: 'decade', value: groupKey, weight: 1.0 });
+        criteria.push({ attribute: 'decade', value: groupKey, weight: 1.0, requirement: true });
         break;
       case 'genre+decade':
         const [genre, decade] = groupKey.split('|');
         if (genre && decade) {
-          criteria.push({ attribute: 'genre', value: genre, weight: 0.7 });
-          criteria.push({ attribute: 'decade', value: decade, weight: 0.7 });
+          criteria.push({ attribute: 'genre', value: genre, weight: 0.7, requirement: false });
+          criteria.push({ attribute: 'decade', value: decade, weight: 0.7, requirement: true });
         }
         break;
     }
@@ -702,7 +702,7 @@ export class MusicCacheService {
    */
   private async createRadioStationFromTracks(
     name: string,
-    criteria: { attribute: RadioStationAttribute; value: string; weight: number }[]
+    criteria: RadioStationCriteria[]
   ): Promise<RadioStation> {
     // Import the RadioStationService here to avoid circular dependency
     const { radioStationService } = await import('./radioStationService');
@@ -716,23 +716,23 @@ export class MusicCacheService {
     });
   }
 
-/**
-   * Assign images to auto-generated radio stations based on genre
-   */
+  /**
+     * Assign images to auto-generated radio stations based on genre
+     */
   private async assignImagesToStation(station: RadioStation): Promise<void> {
     // Import images from src/assets - Vite will handle these properly
     const images = import.meta.glob('../assets/**/*.{jpg,png}', { eager: true });
     const imagesByGenre = new Map<string, string[]>();
 
-    for(const [key, module] of Object.entries(images)){
+    for (const [key, module] of Object.entries(images)) {
       // Extract genre from path: ../assets/genre/filename.jpg
       const pathParts = key.split('/');
       const genre = pathParts[2]; // assets is index 1, genre is index 2
-      
+
       // Get the URL from the imported module
       const imageUrl = (module as { default: string }).default;
-      
-      if(genre && imageUrl){
+
+      if (genre && imageUrl) {
         imagesByGenre.set(genre, [...(imagesByGenre.get(genre) || []), imageUrl]);
       }
     }
@@ -774,7 +774,7 @@ export class MusicCacheService {
         }
       }
     }
-    if(!station.imagePath){
+    if (!station.imagePath) {
       console.log(`Couldn't find image for ${genre}`);
     }
   }

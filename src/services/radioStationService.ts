@@ -27,6 +27,7 @@ export interface RadioStationCriteria {
   attribute: RadioStationAttribute;
   value: string;
   weight: number; // 0-1 scale
+  requirement: boolean;
 }
 
 export class RadioStationService {
@@ -235,6 +236,7 @@ export class RadioStationService {
   private calculateTrackScore(track: MusicLibraryEntry, criteria: RadioStationCriteria[]): number {
     let totalWeight = 0;
     let weightedSum = 0;
+    let requiredWeight: number | null = null;
 
     // if there is no criteria, everything matches
     if (criteria.length === 0) return 1;
@@ -248,7 +250,15 @@ export class RadioStationService {
 
       const matchScore = this.calculateAttributeMatch(track, criterion);
       weightedSum += matchScore * attributeWeight;
-      totalWeight += attributeWeight;
+      if(criterion.requirement){
+        requiredWeight = (requiredWeight ?? 1) * weightedSum;
+      } else{
+        totalWeight += attributeWeight;
+      }
+    }
+    if(requiredWeight !== null)
+    {
+      totalWeight *= requiredWeight;
     }
 
     // Return the weighted sum (already normalized)
@@ -511,7 +521,8 @@ export class RadioStationService {
         averagedCriteria.push({
           attribute: attribute as RadioStationCriteria['attribute'],
           value,
-          weight
+          weight,
+          requirement: false,
         });
       }
     }
