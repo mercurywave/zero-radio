@@ -182,9 +182,20 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
                         <div className="track-artist">{trackScore.track.artist}</div>
                       </div>
                     </div>
-                    <div className="track-score">
-                      {trackScore.score.toFixed(2)}
-                    </div>
+<div className="track-score">
+                       <div className="track-score-bar-container">
+                         <div className="track-score-bar">
+                           <div 
+                             className="track-score-bar-fill" 
+                             style={{ 
+                               width: `${maxScore > 0 ? (trackScore.score / maxScore * 100).toFixed(2) : 0}%`,
+                               minWidth: '2px'
+                             }}
+                           ></div>
+                         </div>
+                         <span className="score-value">{trackScore.score.toFixed(2)}</span>
+                       </div>
+                     </div>
                   </div>
                 ))}
               </div>
