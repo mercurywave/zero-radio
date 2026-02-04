@@ -167,22 +167,21 @@ export class RadioStationService {
   }
 
   /**
-   * Select tracks for a radio station based on weighted criteria
-   */
-  public async selectNextTrackForStation(
+    * Score tracks for a radio station based on weighted criteria
+    * Returns only tracks with scores greater than zero, sorted
+    */
+  public async scoreTracksForStation(
     station: RadioStation,
     playbackHistory: AudioTrack[]
-  ): Promise<TrackScore | null> {
-    // Get all tracks from the music library
+  ): Promise<TrackScore[]> {
     const allTracks = await MusicCacheService.getInstance().getAllCachedEntries();
 
     if (allTracks.length === 0) {
-      return null;
+      return [];
     }
 
     let recent = [...playbackHistory].reverse().slice(0, 20);
 
-    // Calculate scores for each track
     const scoredTracks: TrackScore[] = [];
 
     for (const track of allTracks) {
@@ -190,9 +189,6 @@ export class RadioStationService {
       let index = recent.findIndex(t => t.id === track.id);
       if (score > 0) {
         if (index >= 0) {
-          // Apply penalty to recently played songs
-          // The last played track (index 0) gets a 100% penalty (score becomes 0)
-          // Penalty decreases linearly: after 20 tracks, penalty is 0%
           const penalty = Math.max(0, 1 - index / 20);
           scoredTracks.push({ track: track, score: score * (1 - penalty) });
         } else {
@@ -201,11 +197,22 @@ export class RadioStationService {
       }
     }
 
-    // Sort by score in descending order
     scoredTracks.sort((a, b) => b.score - a.score);
 
-    // Use weighted random selection with easing function
-    // Higher scores are more likely to be picked, but lower scores still have a chance
+    return scoredTracks;
+  }
+
+  /**
+   * Select tracks for a radio station based on weighted criteria
+   */
+  public async selectNextTrackForStation(
+    station: RadioStation,
+    playbackHistory: AudioTrack[]
+  ): Promise<TrackScore | null> {
+    const scoredTracks = await this.scoreTracksForStation(station, playbackHistory);
+
+    if (scoredTracks.length === 0) return null;
+
     const totalScore = scoredTracks.reduce((sum, item) => sum + item.score, 0);
     if (totalScore <= 0) return null;
 
@@ -219,7 +226,6 @@ export class RadioStationService {
       }
     }
 
-    // Fallback to top track
     return scoredTracks[0] ?? null;
   }
 
