@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RadioStation, radioStationService } from '../services/radioStationService';
+import { RadioStation, radioStationService, TrackScore } from '../services/radioStationService';
 import { MusicLibraryEntry } from '../services/musicCacheService';
 import './RadioStationDetailView.css';
 
@@ -15,6 +15,9 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
   const [error, setError] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
+  const [topTracks, setTopTracks] = useState<TrackScore[]>([]);
+  const [isFetchingTracks, setIsFetchingTracks] = useState(false);
+  const [maxScore, setMaxScore] = useState(0);
 
   useEffect(() => {
     const fetchStationDetails = async () => {
@@ -23,6 +26,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
         if (fetchedStation) {
           setStation(fetchedStation);
           setEditedName(fetchedStation.name);
+          await fetchTopTracks(fetchedStation);
         } else {
           setError('Station not found');
         }
@@ -34,12 +38,32 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
       }
     };
 
+    const fetchTopTracks = async (station: RadioStation) => {
+      setIsFetchingTracks(true);
+      try {
+        const tracks = await radioStationService.scoreTracksForStation(station, []);
+        setTopTracks(tracks.slice(0, 100));
+
+        // Calculate max score for bar graph scaling
+        if (tracks.length > 0) {
+          const max = Math.max(...tracks.map(t => t.score));
+          setMaxScore(max);
+        } else {
+          setMaxScore(0);
+        }
+      } catch (err) {
+        console.error('Error fetching top tracks:', err);
+      } finally {
+        setIsFetchingTracks(false);
+      }
+    };
+
     fetchStationDetails();
   }, [stationId]);
 
   const handleSaveName = async () => {
     if (!station || editedName.trim() === '') return;
-    
+
     try {
       const updatedStation = await radioStationService.updateStation(station, { name: editedName });
       setStation(updatedStation);
@@ -89,8 +113,8 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
         </button>
         {isEditingName ? (
           <div className="edit-name-container">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={editedName}
               onChange={(e) => setEditedName(e.target.value)}
               className="edit-name-input"
@@ -128,7 +152,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
               <p>No description available for this station.</p>
             )}
           </div>
-          
+
           {station.criteria && station.criteria.length > 0 && (
             <div className="radio-station-criteria">
               <h2>Station Criteria</h2>
@@ -141,12 +165,39 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
               </ul>
             </div>
           )}
-          
+
+          {/* Top tracks display */}
+          <div className="radio-station-top-tracks">
+            <h2>Top Tracks</h2>
+            {isFetchingTracks ? (
+              <p>Loading top tracks...</p>
+            ) : topTracks.length > 0 ? (
+              <div className="top-tracks-list">
+                {topTracks.map((trackScore, index) => (
+                  <div key={index} className="track-item">
+                    <div className="track-info">
+                      <span className="track-number">{index + 1}</span>
+                      <div className="track-details">
+                        <div className="track-title">{trackScore.track.title}</div>
+                        <div className="track-artist">{trackScore.track.artist}</div>
+                      </div>
+                    </div>
+                    <div className="track-score">
+                      {trackScore.score.toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No tracks found for this station.</p>
+            )}
+          </div>
+
           {/* Show edit button for temporary stations only */}
           {station.isTemporary && (
             <div className="edit-name-section">
-              <button 
-                onClick={() => setIsEditingName(true)} 
+              <button
+                onClick={() => setIsEditingName(true)}
                 className="edit-name-button"
               >
                 Edit Name
