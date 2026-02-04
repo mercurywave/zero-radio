@@ -230,6 +230,10 @@ const App: React.FC = () => {
                 playbackService['audioElement'].volume = newVolume;
               }
             }}
+            onStationSelected={(stationId) => {
+              setCurrentStationId(stationId);
+              setCurrentView('stationDetail');
+            }}
           />
         </div>
       )}

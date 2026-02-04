@@ -15,6 +15,7 @@ type PlaybackControlsProps = {
   onPrevious: () => void;
   onNext: () => void;
   onVolumeChange: (volume: number) => void;
+  onStationSelected?: (stationId: string) => void;
 };
 
 const PlaybackControls: React.FC<PlaybackControlsProps> = ({
@@ -28,6 +29,7 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onPrevious,
   onNext,
   onVolumeChange,
+  onStationSelected,
 }) => {
   // Format time for display
   const formatTime = (seconds: number): string => {
@@ -95,11 +97,18 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               </div>
             )}
             {selectedStation && (
-              <div className="station-line" title={
-                `Criteria:\n${selectedStation.criteria
-                  .map(criterion => `${criterion.attribute}: ${criterion.value} (${criterion.weight})`)
-                  .join('\n')}`
-              }>{selectedStation.name}</div>
+              <div
+                className="station-line"
+                title={
+                  `Criteria:\n${selectedStation.criteria
+                    .map(criterion => `${criterion.attribute}: ${criterion.value} (${criterion.weight})`)
+                    .join('\n')}`
+                }
+                onClick={() => onStationSelected && onStationSelected(selectedStation.id)}
+                style={{ cursor: 'pointer' }}
+              >
+                {selectedStation.name}
+              </div>
             )}
           </div>
         </div>
