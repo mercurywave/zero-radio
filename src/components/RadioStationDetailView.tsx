@@ -19,6 +19,32 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
   const [isFetchingTracks, setIsFetchingTracks] = useState(false);
   const [maxScore, setMaxScore] = useState(0);
 
+  // Get tooltip for track attributes based on station criteria
+  const getTrackAttributesTooltip = (track: MusicLibraryEntry) => {
+    if (!track) return '';
+
+    const attributes = [];
+
+    if (track.artist) {
+      attributes.push(`Artist: ${track.artist}`);
+    }
+    if (track.album) {
+      attributes.push(`Album: ${track.album}`);
+    }
+    if (track.genre) {
+      attributes.push(`Genre: ${track.genre}`);
+    }
+    if (track.mood) {
+      attributes.push(`Mood: ${track.mood}`);
+    }
+    if (track.year) {
+      const decade = Math.floor(track.year / 10) * 10;
+      attributes.push(`Decade: ${decade}s`);
+    }
+
+    return attributes.join('\n');
+  };
+
   useEffect(() => {
     const fetchStationDetails = async () => {
       try {
@@ -166,7 +192,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
             </div>
           )}
 
-          {/* Top tracks display */}
+{/* Top tracks display */}
           <div className="radio-station-top-tracks">
             <h2>Top Tracks</h2>
             {isFetchingTracks ? (
@@ -178,8 +204,18 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
                     <div className="track-info">
                       <span className="track-number">{index + 1}</span>
                       <div className="track-details">
-                        <div className="track-title">{trackScore.track.title}</div>
-                        <div className="track-artist">{trackScore.track.artist}</div>
+                        <div 
+                          className="track-title" 
+                          title={getTrackAttributesTooltip(trackScore.track)}
+                        >
+                          {trackScore.track.title}
+                        </div>
+                        <div 
+                          className="track-artist" 
+                          title={getTrackAttributesTooltip(trackScore.track)}
+                        >
+                          {trackScore.track.artist}
+                        </div>
                       </div>
                     </div>
                     <div className="track-score">
