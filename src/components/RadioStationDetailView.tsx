@@ -192,7 +192,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
             </div>
           )}
 
-{/* Top tracks display */}
+          {/* Top tracks display */}
           <div className="radio-station-top-tracks">
             <h2>Top Tracks</h2>
             {isFetchingTracks ? (
@@ -204,14 +204,14 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
                     <div className="track-info">
                       <span className="track-number">{index + 1}</span>
                       <div className="track-details">
-                        <div 
-                          className="track-title" 
+                        <div
+                          className="track-title"
                           title={getTrackAttributesTooltip(trackScore.track)}
                         >
                           {trackScore.track.title}
                         </div>
-                        <div 
-                          className="track-artist" 
+                        <div
+                          className="track-artist"
                           title={getTrackAttributesTooltip(trackScore.track)}
                         >
                           {trackScore.track.artist}
@@ -241,7 +241,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
           </div>
 
           {/* Show edit button for temporary stations only */}
-          {station.isTemporary && (
+          {station.isCustom && (
             <div className="edit-name-section">
               <button
                 onClick={() => setIsEditingName(true)}
