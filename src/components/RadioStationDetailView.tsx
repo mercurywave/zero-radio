@@ -413,7 +413,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
               <ul>
                 {station.criteria.map((criterion, index) => (
                   <li key={index}>
-                    <strong>{criterion.attribute}:</strong> {criterion.value} (weight: {criterion.weight})
+                    <strong>{criterion.attribute}:</strong> {criterion.value} (weight: {criterion.weight.toFixed(2)})
                   </li>
                 ))}
               </ul>

@@ -188,6 +188,8 @@
   list-style-type: none;
   padding: 0;
   margin: 0;
+  max-height: 250px;
+  overflow: auto;
 }
 
 .radio-station-criteria li {
@@ -338,10 +340,12 @@
   background-color: #d32f2f;
 }
 
-.track-list {
+.radio-station-detail-view .track-list {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  max-height: 250px;
+  overflow: auto;
 }
 
 .track-item-small {
@@ -374,6 +378,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.7rem;
+  margin-left: 5px;
 }
 
 .remove-track-button:hover {
