@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RadioStation, radioStationService, TrackScore } from '../services/radioStationService';
 import { MusicLibraryEntry } from '../services/musicCacheService';
 import './RadioStationDetailView.css';
@@ -18,6 +18,7 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
   const [topTracks, setTopTracks] = useState<TrackScore[]>([]);
   const [isFetchingTracks, setIsFetchingTracks] = useState(false);
   const [maxScore, setMaxScore] = useState(0);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Get tooltip for track attributes based on station criteria
   const getTrackAttributesTooltip = (track: MusicLibraryEntry) => {
@@ -99,6 +100,25 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
     }
   };
 
+  const handleNameClick = () => {
+    if (station?.isCustom) {
+      setIsEditingName(true);
+    }
+  };
+
+  const handleBlur = () => {
+    if (isEditingName) {
+      handleSaveName();
+    }
+  };
+
+  useEffect(() => {
+    if (isEditingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [isEditingName]);
+
   if (isLoading) {
     return (
       <div className="radio-station-detail-view">
@@ -140,16 +160,27 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
         {isEditingName ? (
           <div className="edit-name-container">
             <input
+              ref={nameInputRef}
               type="text"
               value={editedName}
               onChange={(e) => setEditedName(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSaveName();
+                }
+              }}
               className="edit-name-input"
               autoFocus
             />
-            <button onClick={handleSaveName} className="save-name-button">Save</button>
           </div>
         ) : (
-          <h1>{station.name}</h1>
+          <h1
+            className={`station-title ${station.isCustom ? 'editable' : ''}`}
+            onClick={handleNameClick}
+          >
+            {station.name}
+          </h1>
         )}
         <p className="radio-station-type">Radio Station</p>
       </div>
@@ -239,18 +270,6 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
               <p>No tracks found for this station.</p>
             )}
           </div>
-
-          {/* Show edit button for temporary stations only */}
-          {station.isCustom && (
-            <div className="edit-name-section">
-              <button
-                onClick={() => setIsEditingName(true)}
-                className="edit-name-button"
-              >
-                Edit Name
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

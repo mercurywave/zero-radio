@@ -15,6 +15,14 @@
   font-size: 2rem;
 }
 
+.station-title {
+  cursor: pointer;
+}
+
+.station-title.editable:hover {
+  text-decoration: underline;
+}
+
 .radio-station-type {
   margin: 0 0 20px 0;
   color: #aaa;
@@ -35,6 +43,7 @@
   background-color: #333;
   color: white;
   font-size: 1.2rem;
+  width: auto;
 }
 
 .save-name-button {
