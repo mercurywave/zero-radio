@@ -328,15 +328,15 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
                     placeholder={`Enter artist, album, or track name...`}
                     className="criteria-input"
                   />
-                  {isSearching && (
-                    <div className="search-spinner">Searching...</div>
-                  )}
-                  {searchResults.length > 0 && (
+                  {(searchResults.length > 0 || isSearching) && (
                     <div className="search-results">
-                      {searchResults.map((result, resultIndex) => (
+                      {isSearching && (
+                        <div className="search-spinner">Searching...</div>
+                      )}
+                      {searchResults.length > 0 && searchResults.map((result, resultIndex) => (
                         <div
                           key={resultIndex}
-                          className="search-result-item"
+                          className="inline-result-item"
                           onClick={() => handleSelectResult(result)}
                         >
                           {result.type === 'track' && (
