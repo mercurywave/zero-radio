@@ -29,7 +29,6 @@ export const performSearch = async (
 
 async function findSearchResults(searchQuery: string) {
   if(searchQuery.trim() === '') { return []; }
-  console.log(searchQuery);
 
   let cacheService = MusicCacheService.getInstance();
   const allEntries = await cacheService.getAllCachedEntries();
