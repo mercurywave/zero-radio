@@ -1,7 +1,6 @@
 import { MusicCacheService, MusicLibraryEntry, SearchResult } from "./musicCacheService";
 import { radioStationService } from "./radioStationService";
 
-
 // track parallel events
 let _generationId = 0;
 
@@ -29,6 +28,9 @@ export const performSearch = async (
 
 
 async function findSearchResults(searchQuery: string) {
+  if(searchQuery.trim() === '') { return []; }
+  console.log(searchQuery);
+
   let cacheService = MusicCacheService.getInstance();
   const allEntries = await cacheService.getAllCachedEntries();
 

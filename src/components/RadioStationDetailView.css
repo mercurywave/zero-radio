@@ -4,6 +4,52 @@
   color: white;
 }
 
+.criteria-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: white;
+  font-size: 1rem;
+}
+
+.input-with-results {
+  position: relative;
+}
+
+/* Add styles for search results */
+.radio-station-detail-view .search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #333;
+  border: 1px solid #444;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #444;
+}
+
+.search-result-item:hover {
+  background-color: #444;
+}
+
+.search-spinner {
+  padding: 10px;
+  text-align: center;
+  color: #aaa;
+}
+
 .radio-station-header {
   margin-bottom: 30px;
   text-align: center;
@@ -249,6 +295,111 @@
   min-width: 40px;
   text-align: right;
   font-size: 0.9rem;
+}
+
+/* Build criteria section */
+.radio-station-build-criteria {
+  background-color: #222;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.radio-station-build-criteria h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+}
+
+.single-search-section {
+  margin-bottom: 20px;
+}
+
+.selected-tracks-section {
+  margin-bottom: 20px;
+}
+
+.selected-tracks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.remove-all-button {
+  padding: 5px 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.remove-all-button:hover {
+  background-color: #d32f2f;
+}
+
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.track-item-small {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #333;
+  border-radius: 4px;
+}
+
+.track-item-small span:first-child {
+  font-weight: bold;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.track-item-small span:last-child {
+  font-size: 0.8rem;
+  color: #ccc;
+  flex: 1;
+  text-align: right;
+}
+
+.remove-track-button {
+  padding: 3px 6px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.remove-track-button:hover {
+  background-color: #d32f2f;
+}
+
+.build-station-button {
+  padding: 12px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  width: 100%;
+}
+
+.build-station-button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.build-station-button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

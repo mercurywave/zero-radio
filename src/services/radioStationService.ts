@@ -184,6 +184,10 @@ export class RadioStationService {
       return [];
     }
 
+    if(station.isTemporary && station.criteria.length === 0) {
+      return [];
+    }
+
     let recent = [...playbackHistory].reverse().slice(0, 20);
 
     const scoredTracks: TrackScore[] = [];

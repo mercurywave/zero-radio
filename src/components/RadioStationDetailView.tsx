@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { RadioStation, radioStationService, TrackScore } from '../services/radioStationService';
 import { MusicLibraryEntry } from '../services/musicCacheService';
+import { performSearch } from '../services/searchService';
 import './RadioStationDetailView.css';
+import { SearchResult } from '../services/musicCacheService';
 
 interface RadioStationDetailViewProps {
   stationId: string;
@@ -19,6 +21,12 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
   const [isFetchingTracks, setIsFetchingTracks] = useState(false);
   const [maxScore, setMaxScore] = useState(0);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // State for building criteria from tracks
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedTracks, setSelectedTracks] = useState<MusicLibraryEntry[]>([]);
 
   // Get tooltip for track attributes based on station criteria
   const getTrackAttributesTooltip = (track: MusicLibraryEntry) => {
@@ -44,6 +52,108 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
     }
 
     return attributes.join('\n');
+  };
+
+  // Search for results when input changes
+  const handleSearchInputChange = async (value: string) => {
+    setSearchQuery(value);
+
+    // Perform search using the search service
+    const results = await performSearch(value, (results) => {
+      // Filter out stations from search results for custom station building
+      const filteredResults = results.filter(result => result.type !== 'station');
+      setSearchResults(filteredResults);
+    }, setIsSearching);
+  };
+
+  // Select a search result and add all tracks to the selected list
+  const handleSelectResult = (result: SearchResult) => {
+    let tracks: MusicLibraryEntry[] = [];
+
+    switch (result.type) {
+      case 'track':
+        tracks = [result];
+        break;
+      case 'artist':
+        tracks = result.tracks;
+        break;
+      case 'album':
+        tracks = result.tracks;
+        break;
+      case 'station':
+        // For stations, we would need to get the tracks from that station
+        // This is a simplified implementation for now - just add empty array
+        tracks = [];
+        break;
+    }
+
+    // Add all tracks to selected list
+    setSelectedTracks(prev => [...prev, ...tracks]);
+
+    // Clear search results and input value
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
+  // Remove a track from the selected list
+  const removeTrackFromList = (track: MusicLibraryEntry) => {
+    setSelectedTracks(prev => prev.filter(t => t.id !== track.id));
+  };
+
+  // Remove all tracks from the selected list
+  const removeAllTracks = () => {
+    setSelectedTracks([]);
+  };
+
+  // Fetch top tracks for a station
+  const fetchTopTracks = async (station: RadioStation) => {
+    setIsFetchingTracks(true);
+    try {
+      const tracks = await radioStationService.scoreTracksForStation(station, []);
+      setTopTracks(tracks.slice(0, 100));
+
+      // Calculate max score for bar graph scaling
+      if (tracks.length > 0) {
+        const max = Math.max(...tracks.map(t => t.score));
+        setMaxScore(max);
+      } else {
+        setMaxScore(0);
+      }
+    } catch (err) {
+      console.error('Error fetching top tracks:', err);
+    } finally {
+      setIsFetchingTracks(false);
+    }
+  };
+
+  // Build criteria from selected tracks
+  const buildStationFromTracks = async () => {
+    if (selectedTracks.length === 0) {
+      return;
+    }
+
+    // Create or update the station with criteria from tracks
+    try {
+      if (station && station.isCustom) {
+        station.isTemporary = false; // make the station more permanent
+        await radioStationService.updateStationFromTracks(
+          station,
+          selectedTracks,
+          { album: 0.5, decade: 0.1 }
+        );
+        // Clear selected tracks after building
+        setSelectedTracks([]);
+        // Refetch the updated station
+        const updatedStation = await radioStationService.getStationById(stationId);
+        if (updatedStation) {
+          setStation(updatedStation);
+          // Refresh top tracks based on updated criteria
+          await fetchTopTracks(updatedStation);
+        }
+      }
+    } catch (err) {
+      console.error('Error building station from tracks:', err);
+    }
   };
 
   useEffect(() => {
@@ -202,13 +312,100 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
         </div>
 
         <div className="radio-station-description-column">
-          <div className="radio-station-description">
-            {station.description ? (
-              <p>{station.description}</p>
-            ) : (
-              <p>No description available for this station.</p>
-            )}
-          </div>
+          
+          {/* Build criteria from tracks section */}
+          {station?.isCustom && (
+            <div className="radio-station-build-criteria">
+              <h2>Build Station Criteria</h2>
+              <p>Add artists, albums, or tracks to build your custom station:</p>
+
+              <div className="single-search-section">
+                <div className="input-with-results">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchInputChange(e.target.value)}
+                    placeholder={`Enter artist, album, or track name...`}
+                    className="criteria-input"
+                  />
+                  {isSearching && (
+                    <div className="search-spinner">Searching...</div>
+                  )}
+                  {searchResults.length > 0 && (
+                    <div className="search-results">
+                      {searchResults.map((result, resultIndex) => (
+                        <div
+                          key={resultIndex}
+                          className="search-result-item"
+                          onClick={() => handleSelectResult(result)}
+                        >
+                          {result.type === 'track' && (
+                            <span>{result.title} - {result.artist}</span>
+                          )}
+                          {result.type === 'artist' && (
+                            <span>Artist: {result.artistName} ({result.trackCount} tracks)</span>
+                          )}
+                          {result.type === 'album' && (
+                            <span>Album: {result.albumName} by {result.artistName}</span>
+                          )}
+                          {result.type === 'station' && (
+                            <span>Station: {result.stationName}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Selected tracks display */}
+              {selectedTracks.length > 0 && (
+                <div className="selected-tracks-section">
+                  <div className="selected-tracks-header">
+                    <span>Selected Tracks ({selectedTracks.length})</span>
+                    <button
+                      onClick={removeAllTracks}
+                      className="remove-all-button"
+                    >
+                      Remove All
+                    </button>
+                  </div>
+                  <div className="track-list">
+                    {selectedTracks.map((track, trackIndex) => (
+                      <div key={track.id} className="track-item-small">
+                        <span>{track.title}</span>
+                        <span>{track.artist}</span>
+                        <button
+                          onClick={() => removeTrackFromList(track)}
+                          className="remove-track-button"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={buildStationFromTracks}
+                disabled={selectedTracks.length === 0}
+                className="build-station-button"
+              >
+                Build Station from Selected Tracks
+              </button>
+            </div>
+          )}
+          
+          {station.description && (
+            <div className="radio-station-description">
+              {station.description ? (
+                <p>{station.description}</p>
+              ) : (
+                <p>No description available for this station.</p>
+              )}
+            </div>
+          )}
 
           {station.criteria && station.criteria.length > 0 && (
             <div className="radio-station-criteria">
