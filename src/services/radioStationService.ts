@@ -185,7 +185,7 @@ export class RadioStationService {
       return [];
     }
 
-    if(station.isTemporary && station.criteria.length === 0) {
+    if (station.isTemporary && station.criteria.length === 0) {
       return [];
     }
 
@@ -418,9 +418,9 @@ export class RadioStationService {
   }
 
   /**
-   * Update a radio station's criteria based on an array of AudioTracks
-   * Averages the criteria values from all tracks
-   */
+    * Update a radio station's criteria based on an array of AudioTracks
+    * Averages the criteria values from all tracks
+    */
   public async updateStationFromTracks(
     station: RadioStation,
     tracks: MusicLibraryEntry[],
@@ -455,7 +455,29 @@ export class RadioStationService {
     // Take the top 5 criteria or all if less than 5
     station.criteria = sortedCriteria.slice(0, 5);
 
+    if(station.isCustom){
+      const albumArtUrl = await this.getAlbumArtForStation(tracks);
+      if (albumArtUrl) {
+        station.imagePath = albumArtUrl;
+      }
+    }
+
     await this.storeStation(station);
+  }
+
+  /**
+    * Get album art URL for a station based on tracks
+    */
+  private async getAlbumArtForStation(tracks: MusicLibraryEntry[]): Promise<string | null> {
+    // Find the first track with album art
+    for (const track of tracks) {
+      const musicCache = MusicCacheService.getInstance();
+      const albumArtUrl = await musicCache.getAlbumArtUrl(track);
+      if (albumArtUrl) {
+        return albumArtUrl;
+      }
+    }
+    return null;
   }
 
   /**
