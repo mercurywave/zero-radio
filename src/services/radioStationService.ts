@@ -447,7 +447,13 @@ export class RadioStationService {
     }
 
     station.updatedAt = new Date();
-    station.criteria = averagedCriteria.filter(c => c.weight > 0);
+    // Sort criteria by weight (descending) and take top 5
+    const sortedCriteria = [...averagedCriteria]
+      .filter(c => c.weight > 0)
+      .sort((a, b) => b.weight - a.weight);
+
+    // Take the top 5 criteria or all if less than 5
+    station.criteria = sortedCriteria.slice(0, 5);
 
     await this.storeStation(station);
   }
