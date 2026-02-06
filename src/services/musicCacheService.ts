@@ -15,6 +15,11 @@ export interface MusicLibraryEntry {
   year: number;
   mood: string;
   duration: number;
+  // Volume normalization data
+  replayGainTrackGain?: number;
+  replayGainTrackPeak?: number;
+  averageLevel?: number;
+  peakLevel?: number;
 }
 
 export interface AudioTrack extends MusicLibraryEntry {

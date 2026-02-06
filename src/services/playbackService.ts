@@ -305,9 +305,9 @@ export class PlaybackService {
   }
 
   /**
-   * Play a track without adding it to history (used for navigation)
-   * @param track The AudioTrack to play
-   */
+  * Play a track without adding it to history (used for navigation)
+  * @param track The AudioTrack to play
+  */
   private async playInternal(track: AudioTrack): Promise<void> {
     if (!track) return;
 
@@ -329,6 +329,9 @@ export class PlaybackService {
       // Load the file
       const objectUrl = URL.createObjectURL(audioFile);
       this.audioElement.src = objectUrl;
+
+      // Apply volume normalization
+      this.applyVolumeNormalization(track, this.audioElement);
 
       try {
         await this.audioElement.play();
@@ -388,8 +391,8 @@ export class PlaybackService {
   }
 
   /**
-   * Clean up resources
-   */
+    * Clean up resources
+    */
   public destroy(): void {
     if (this.audioElement) {
       this.audioElement.pause();
@@ -401,6 +404,24 @@ export class PlaybackService {
       this.audioElement.parentNode?.replaceChild(clone, this.audioElement);
 
       this.audioElement = null;
+    }
+  }
+
+  /**
+    * Apply volume normalization to an audio element based on track metadata
+    * @param track The track with normalization data
+    * @param audioElement The audio element to apply normalization to
+    */
+  private applyVolumeNormalization(track: AudioTrack, audioElement: HTMLAudioElement): void {
+    // We'll implement a simple normalization strategy for now
+    // In the future, we can implement more sophisticated ReplayGain-based normalization
+
+    // For now, we'll use a simple gain-based approach using the track's peak level if available
+    // This is a basic implementation that can be expanded
+    if (track.replayGainTrackGain !== undefined && track.replayGainTrackGain !== null) {
+      // This would be where we would apply ReplayGain if we had more sophisticated handling
+      // For now, we'll just log it for development purposes
+      console.log('Track has ReplayGain data:', track.fileName, track.replayGainTrackGain);
     }
   }
 }
