@@ -3,7 +3,9 @@ Local media player
 
 ## Getting Started
 
-This is a single-page music player application built with React, TypeScript, and Vite.
+This is a music app that build radio stations out of your music, locally.
+
+Try it on GitHub Pages - https://mercurywave.github.io/zero-radio/
 
 ### Prerequisites
 - Node.js (v16 or higher)
@@ -41,4 +43,5 @@ npm run preview
 - `src/App.tsx` - Main application component
 - `src/index.css` - Global styles
 - `src/main.tsx` - Entry point
-- `vite.config.ts` - Vite configuration
+- `vite.config.ts` - Vite configuration
+
