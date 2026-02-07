@@ -140,7 +140,7 @@ const App: React.FC = () => {
       if (e.code === 'Space') {
         // Don't handle space bar if focus is on an input, textarea, or contenteditable element
         const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' ||
+        if ((target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'text') ||
           target.tagName === 'TEXTAREA' ||
           target.isContentEditable) {
           return;
