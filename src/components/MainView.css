@@ -26,6 +26,9 @@
   padding: 10px 0;
   -webkit-overflow-scrolling: touch;
 }
+.horizontal-scroll-container{
+  position: relative;
+}
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .radio-station-grid-horizontal::-webkit-scrollbar {
@@ -36,6 +39,36 @@
 .radio-station-grid-horizontal {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* Gradient overlays for scrollable areas */
+.gradient {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  z-index: 1;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.gradient.left{
+  left: 0;
+  background: linear-gradient(to right, rgba(18, 18, 18, 1) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.gradient.right {
+  right: 0;
+  background: linear-gradient(to left, rgba(18, 18, 18, 1) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* Show gradients when there's more content to scroll */
+.gradient.show {
+  visibility: visible;
+  opacity: 1;
 }
 
 .radio-station-card {

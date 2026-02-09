@@ -134,6 +134,8 @@ const ScrollableContainer: React.FC<{
   onStationSelected?: ((stationId: string) => void) | undefined 
 }> = ({ items, onPlayStation, onStationSelected }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const leftGradient = useRef<HTMLDivElement>(null);
+  const rightGradient = useRef<HTMLDivElement>(null);
   const scrollTimerRef = useRef<any | null>(null);
   const scrollDirectionRef = useRef<'left' | 'right' | null>(null);
 
@@ -176,6 +178,11 @@ const ScrollableContainer: React.FC<{
     } else {
       scrollDirectionRef.current = null;
     }
+
+    if(leftGradient?.current && rightGradient?.current){
+      rightGradient.current.classList.toggle('show', gridElement.scrollLeft < gridElement.scrollWidth - containerWidth);
+      leftGradient.current.classList.toggle('show', gridElement.scrollLeft > 0);
+    }
     
     // Only continue scrolling if we're still near the edge
     if (scrollDirectionRef.current !== null) {
@@ -203,7 +210,7 @@ const ScrollableContainer: React.FC<{
       ref={scrollContainerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-    >
+      >
       <div className="radio-station-grid-horizontal">
         {items.map((station) => (
           <div
@@ -228,6 +235,14 @@ const ScrollableContainer: React.FC<{
           </div>
         ))}
       </div>
+      <div 
+        className="gradient left"
+        ref={leftGradient}
+      />
+      <div 
+        className="gradient right"
+        ref={rightGradient}
+      />
     </div>
   );
 };
