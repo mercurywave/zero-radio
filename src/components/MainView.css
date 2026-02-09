@@ -104,6 +104,38 @@
   z-index: 2;
 }
 
+.station-detail-arrow {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  z-index: 3;
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.radio-station-card:hover .station-detail-arrow {
+  opacity: 0.7;
+  visibility: visible;
+}
+
+.radio-station-card:hover .station-detail-arrow:hover {
+  background: rgba(0, 0, 0, 0.7);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 .play-btn {
   background-color: #4caf50;
   color: white;

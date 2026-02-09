@@ -95,13 +95,13 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
         onCreateNewStation={onCreateNewStation}
       />
 
-      {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} />}
+      {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} onStationSelected={onStationSelected} />}
     </div>
   )
 }
 
 // Render radio station tiles when no search query
-const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation }: { suggestedStations: any[], recentStations: any[], onPlayStation?: ((station: RadioStation, leadTrack?: MusicLibraryEntry) => void) | undefined }) => {
+const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation, onStationSelected }: { suggestedStations: any[], recentStations: any[], onPlayStation?: ((station: RadioStation, leadTrack?: MusicLibraryEntry) => void) | undefined, onStationSelected?: ((stationId: string) => void) | undefined }) => {
   return (
     <>
       {/* Suggested Stations */}
@@ -119,6 +119,16 @@ const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation }
               <img src={station.imagePath} alt={station.name} className="station-image" />
             )}
             <div className="station-label">{station.name.toUpperCase()}</div>
+            <button
+              className="station-detail-arrow"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStationSelected && onStationSelected(station.id);
+              }}
+              aria-label={`View details for ${station.name}`}
+            >
+              ↷
+            </button>
           </div>
         ))}
       </div>
@@ -138,6 +148,16 @@ const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation }
               <img src={station.imagePath} alt={station.name} className="station-image" />
             )}
             <div className="station-label">{station.name.toUpperCase()}</div>
+            <button
+              className="station-detail-arrow"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStationSelected && onStationSelected(station.id);
+              }}
+              aria-label={`View details for ${station.name}`}
+            >
+              ↷
+            </button>
           </div>
         ))}
       </div>
