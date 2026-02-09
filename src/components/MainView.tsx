@@ -159,27 +159,32 @@ const ScrollableContainer: React.FC<{
       scrollTimerRef.current = null;
     }
     
-    // Check if mouse is near the edges and scroll appropriately
+    // Calculate scroll speed based on distance from edge
+    let scrollSpeed = 0;
     if (mouseX < threshold && gridElement.scrollLeft > 0) {
       // Scroll left
-      gridElement.scrollLeft -= 20;
+      const distanceFromEdge = threshold - mouseX;
+      scrollSpeed = Math.min(20, distanceFromEdge / 2); // Speed increases as mouse gets closer to edge
       scrollDirectionRef.current = 'left';
-      scrollTimerRef.current = setTimeout(() => {
-        if (scrollContainerRef.current && scrollDirectionRef.current === 'left') {
-          handleMouseMove(e);
-        }
-      }, 50);
+      gridElement.scrollLeft -= scrollSpeed;
     } else if (mouseX > containerWidth - threshold && gridElement.scrollLeft < gridElement.scrollWidth - containerWidth) {
       // Scroll right
-      gridElement.scrollLeft += 20;
+      const distanceFromEdge = mouseX - (containerWidth - threshold);
+      scrollSpeed = Math.min(20, distanceFromEdge / 2); // Speed increases as mouse gets closer to edge
       scrollDirectionRef.current = 'right';
-      scrollTimerRef.current = setTimeout(() => {
-        if (scrollContainerRef.current && scrollDirectionRef.current === 'right') {
-          handleMouseMove(e);
-        }
-      }, 50);
+      gridElement.scrollLeft += scrollSpeed;
     } else {
       scrollDirectionRef.current = null;
+    }
+    
+    // Only continue scrolling if we're still near the edge
+    if (scrollDirectionRef.current !== null) {
+      scrollTimerRef.current = setTimeout(() => {
+        if (scrollContainerRef.current && scrollDirectionRef.current) {
+          // Recursively call handleMouseMove with the same event to maintain consistent scrolling
+          handleMouseMove(e);
+        }
+      }, 16); // ~60fps
     }
   };
 
