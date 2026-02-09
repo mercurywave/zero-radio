@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SearchView from './SearchView';
 import { AudioTrack, MusicCacheService, MusicLibraryEntry, SearchResult } from '../services/musicCacheService';
 import './MainView.css';
@@ -36,18 +36,18 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
         // Select 5 random stations if available
         let randomStations: RadioStation[] = [];
         if (allStations.length > 0) {
-          randomStations = allStations.sort(() => Math.random() - 0.5).slice(0, 5);
+          randomStations = allStations.sort(() => Math.random() - 0.5).slice(0, 20);
         }
         let playAll = await radioStationService.getDefaultStation();
         setSuggestedStations([playAll, ...randomStations]);
-        // Get stations with lastPlayed, sort by lastPlayed (newest first), and cap to 6
+        // Get stations with lastPlayed, sort by lastPlayed (newest first), and cap to 20
         const recent = allStations
           .filter(station => station.lastPlayed)
           .sort((a, b) => {
             if (!a.lastPlayed || !b.lastPlayed) return 0;
             return b.lastPlayed.getTime() - a.lastPlayed.getTime();
           })
-          .slice(0, 6);
+          .slice(0, 20);
         setRecentStations(recent);
       } catch (error) {
         console.error('Failed to initialize database:', error);
@@ -108,37 +108,99 @@ const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation, 
       <div className="section-title">
         <h3>Suggested Stations</h3>
       </div>
-      <div className="radio-station-grid">
-        {suggestedStations.map((station) => (
-          <div
-            key={station.id}
-            className="radio-station-card"
-            onClick={() => onPlayStation && onPlayStation(station)}
-          >
-            {station.imagePath && (
-              <img src={station.imagePath} alt={station.name} className="station-image" />
-            )}
-            <div className="station-label">{station.name.toUpperCase()}</div>
-            <button
-              className="station-detail-arrow"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStationSelected && onStationSelected(station.id);
-              }}
-              aria-label={`View details for ${station.name}`}
-            >
-              ↷
-            </button>
-          </div>
-        ))}
-      </div>
+      <ScrollableContainer 
+        items={suggestedStations} 
+        onPlayStation={onPlayStation} 
+        onStationSelected={onStationSelected} 
+      />
 
       {/* Recent Stations */}
       <div className="section-title">
         <h3>Recently Played</h3>
       </div>
-      <div className="radio-station-grid">
-        {recentStations.map((station) => (
+      <ScrollableContainer 
+        items={recentStations} 
+        onPlayStation={onPlayStation} 
+        onStationSelected={onStationSelected} 
+      />
+    </>
+  );
+};
+
+// Scrollable container component with edge scrolling
+const ScrollableContainer: React.FC<{ 
+  items: any[], 
+  onPlayStation?: ((station: RadioStation, leadTrack?: MusicLibraryEntry) => void) | undefined, 
+  onStationSelected?: ((stationId: string) => void) | undefined 
+}> = ({ items, onPlayStation, onStationSelected }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTimerRef = useRef<any | null>(null);
+  const scrollDirectionRef = useRef<'left' | 'right' | null>(null);
+
+  // Handle mouse move for edge scrolling
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!scrollContainerRef.current) return;
+    
+    // Get the inner grid element that actually scrolls
+    const gridElement = scrollContainerRef.current.querySelector('.radio-station-grid-horizontal');
+    if (!gridElement) return;
+    
+    const container = scrollContainerRef.current;
+    const rect = container.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const containerWidth = rect.width;
+    
+    // Define scroll threshold (50px from edges)
+    const threshold = 50;
+    
+    // Stop any existing timer
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
+      scrollTimerRef.current = null;
+    }
+    
+    // Check if mouse is near the edges and scroll appropriately
+    if (mouseX < threshold && gridElement.scrollLeft > 0) {
+      // Scroll left
+      gridElement.scrollLeft -= 20;
+      scrollDirectionRef.current = 'left';
+      scrollTimerRef.current = setTimeout(() => {
+        if (scrollContainerRef.current && scrollDirectionRef.current === 'left') {
+          handleMouseMove(e);
+        }
+      }, 50);
+    } else if (mouseX > containerWidth - threshold && gridElement.scrollLeft < gridElement.scrollWidth - containerWidth) {
+      // Scroll right
+      gridElement.scrollLeft += 20;
+      scrollDirectionRef.current = 'right';
+      scrollTimerRef.current = setTimeout(() => {
+        if (scrollContainerRef.current && scrollDirectionRef.current === 'right') {
+          handleMouseMove(e);
+        }
+      }, 50);
+    } else {
+      scrollDirectionRef.current = null;
+    }
+  };
+
+  // Handle mouse leave to reset scrolling
+  const handleMouseLeave = () => {
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
+      scrollTimerRef.current = null;
+    }
+    scrollDirectionRef.current = null;
+  };
+
+  return (
+    <div 
+      className="horizontal-scroll-container"
+      ref={scrollContainerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="radio-station-grid-horizontal">
+        {items.map((station) => (
           <div
             key={station.id}
             className="radio-station-card"
@@ -161,7 +223,7 @@ const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation, 
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 
