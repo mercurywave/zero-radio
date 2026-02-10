@@ -24,6 +24,7 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
   // State for suggested stations from the service
   const [suggestedStations, setSuggestedStations] = useState<RadioStation[]>([]);
   const [recentStations, setRecentStations] = useState<RadioStation[]>([]);
+  const [favoritedStations, setFavoritedStations] = useState<RadioStation[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
 
   // Initialize the cache service and fetch suggested stations when component mounts
@@ -49,6 +50,15 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
           })
           .slice(0, 20);
         setRecentStations(recent);
+        // Get favorited stations, sort by favoritedAt (newest first), and cap to 20
+        const favorited = allStations
+          .filter(station => station.favoritedAt)
+          .sort((a, b) => {
+            if (!a.favoritedAt || !b.favoritedAt) return 0;
+            return b.favoritedAt.getTime() - a.favoritedAt.getTime();
+          })
+          .slice(0, 20);
+        setFavoritedStations(favorited);
       } catch (error) {
         console.error('Failed to initialize database:', error);
       }
@@ -95,15 +105,29 @@ const MainView: React.FC<MainViewProps> = ({ onPlayTrack, onPlayStation, onAlbum
         onCreateNewStation={onCreateNewStation}
       />
 
-      {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} onPlayStation={onPlayStation} onStationSelected={onStationSelected} />}
+      {searchQuery.trim() === '' && !isLoadingSuggestions && <RenderStationTiles suggestedStations={suggestedStations} recentStations={recentStations} favoritedStations={favoritedStations} onPlayStation={onPlayStation} onStationSelected={onStationSelected} />}
     </div>
   )
 }
 
 // Render radio station tiles when no search query
-const RenderStationTiles = ({ suggestedStations, recentStations, onPlayStation, onStationSelected }: { suggestedStations: any[], recentStations: any[], onPlayStation?: ((station: RadioStation, leadTrack?: MusicLibraryEntry) => void) | undefined, onStationSelected?: ((stationId: string) => void) | undefined }) => {
+const RenderStationTiles = ({ suggestedStations, recentStations, favoritedStations, onPlayStation, onStationSelected }: { suggestedStations: any[], recentStations: any[], favoritedStations: any[], onPlayStation?: ((station: RadioStation, leadTrack?: MusicLibraryEntry) => void) | undefined, onStationSelected?: ((stationId: string) => void) | undefined }) => {
   return (
     <>
+      {/* Favorited Stations */}
+      {favoritedStations.length > 0 && (
+        <>
+          <div className="section-title">
+            <h3>Favorited Stations</h3>
+          </div>
+          <ScrollableContainer 
+            items={favoritedStations} 
+            onPlayStation={onPlayStation} 
+            onStationSelected={onStationSelected} 
+          />
+        </>
+      )}
+
       {/* Suggested Stations */}
       <div className="section-title">
         <h3>Suggested Stations</h3>

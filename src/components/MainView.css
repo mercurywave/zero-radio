@@ -18,6 +18,10 @@
   color: #4caf50;
 }
 
+.section-title.favorited h3 {
+  color: #ffd700;
+}
+
 .radio-station-grid-horizontal {
   display: flex;
   overflow-x: auto;
