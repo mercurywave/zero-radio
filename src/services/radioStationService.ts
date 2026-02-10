@@ -20,7 +20,7 @@ export interface RadioStation {
   isCustom?: boolean | undefined;
   isAllMusic?: boolean | undefined;
   imagePath?: string | undefined;
-  isFavorite?: boolean;
+  favoritedAt?: Date | null | undefined;
 }
 
 export type RadioStationAttribute = 'artist' | 'album' | 'genre' | 'mood' | 'decade';
@@ -36,7 +36,7 @@ export class RadioStationService {
   constructor() {
   }
 
-  /**
+/**
    * Create a new radio station
    */
   public async createStation(station: Omit<RadioStation, 'id' | 'createdAt' | 'updatedAt'>): Promise<RadioStation> {
@@ -55,7 +55,8 @@ export class RadioStationService {
       isTemporary,
       isAllMusic: station?.isAllMusic,
       imagePath: station?.imagePath,
-      isCustom: station?.isCustom
+      isCustom: station?.isCustom,
+      favoritedAt: null
     };
 
     await this.storeStation(newStation);
@@ -81,7 +82,7 @@ export class RadioStationService {
       lastPlayed: updates.lastPlayed || station.lastPlayed || null,
       imagePath: updates.imagePath || station.imagePath,
       isCustom: updates.isCustom || station.isCustom,
-      isFavorite: updates.isFavorite !== undefined ? updates.isFavorite : station.isFavorite || false,
+      favoritedAt: updates.favoritedAt !== undefined ? updates.favoritedAt : station.favoritedAt,
     };
 
     await this.storeStation(updatedStation);
