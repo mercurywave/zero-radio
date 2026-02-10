@@ -292,6 +292,18 @@ const RadioStationDetailView: React.FC<RadioStationDetailViewProps> = ({ station
             {station.name}
           </h1>
         )}
+        <button 
+          className={`favorite-button ${station.isFavorite ? 'favorited' : ''}`}
+          onClick={async () => {
+            if (station) {
+              const updatedStation = await radioStationService.updateStation(station, { isFavorite: !station.isFavorite });
+              setStation(updatedStation);
+            }
+          }}
+          aria-label={station.isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          {station.isFavorite ? '★' : '☆'}
+        </button>
         <p className="radio-station-type">Radio Station</p>
       </div>
 
