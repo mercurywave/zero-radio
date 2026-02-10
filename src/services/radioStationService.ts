@@ -197,15 +197,15 @@ export class RadioStationService {
     const scoredTracks: TrackScore[] = [];
 
     for (const track of allTracks) {
-      const score = this.calculateTrackScore(track, station.criteria);
       let index = recent.findIndex(t => t.id === track.id);
+      let penalty = 0;
+      if (index >= 0) {
+        // last 5 tracks are effectively never repeated, then chances decrease
+        penalty = Math.min(1, Math.max(0, 1 - (index - 5) / 20));
+      }
+      const score = this.calculateTrackScore(track, station.criteria) * (1 - penalty);
       if (score > 0) {
-        if (index >= 0) {
-          const penalty = Math.max(0, 1 - index / 20);
-          scoredTracks.push({ track: track, score: score * (1 - penalty) });
-        } else {
-          scoredTracks.push({ track: track, score });
-        }
+        scoredTracks.push({ track: track, score });
       }
     }
 
